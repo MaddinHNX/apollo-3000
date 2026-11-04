@@ -4,8 +4,10 @@ import {
   Copy,
   DoorOpen,
   ExternalLink,
+  Link2,
   LogIn,
   RotateCcw,
+  Share2,
   Sparkles,
   Trash2,
   Users,
@@ -19,7 +21,7 @@ interface HouseholdAuthModalProps {
   onClose: () => void
   householdState: HouseholdState
   activeMember: HouseholdMember
-  onUpdateHouseholdId: (newHouseholdId: string) => void
+  onUpdateHouseholdId: (newHouseholdId: string) => Promise<void> | void
   onGoogleUserConnected: (user: { name: string; email: string; avatar: string }) => void
   onSaveCalendarUrl: (calendarUrl: string) => void
   onResetHouseholdToZero: (newHouseholdName: string, memberAName: string, memberBName: string) => void
@@ -36,7 +38,7 @@ export function HouseholdAuthModal({
   onResetHouseholdToZero,
 }: HouseholdAuthModalProps) {
   const [inputHouseholdCode, setInputHouseholdCode] = useState('')
-  const [copied, setCopied] = useState(false)
+  const [shareSuccess, setShareSuccess] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isJoining, setIsJoining] = useState(false)
@@ -54,10 +56,31 @@ export function HouseholdAuthModal({
 
   if (!isOpen) return null
 
-  const handleCopyCode = () => {
-    navigator.clipboard.writeText(householdState.householdId)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  const handleShareInviteLink = async () => {
+    const inviteUrl = `${window.location.origin}/?join=${encodeURIComponent(householdState.householdId)}`
+    const shareData = {
+      title: `Apollo 3000 – Haushalt "${householdState.householdName}"`,
+      text: `Tritt unserem gemeinsamen Haushalt "${householdState.householdName}" in Apollo 3000 bei! Ein Klick genügt:\n${inviteUrl}`,
+      url: inviteUrl,
+    }
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData)
+        return
+      } catch {
+        // Fallback wenn Share Dialog abgebrochen oder nicht unterstützt
+      }
+    }
+
+    // Fallback: Zwischenablage
+    try {
+      await navigator.clipboard.writeText(inviteUrl)
+      setShareSuccess(true)
+      setTimeout(() => setShareSuccess(false), 2500)
+    } catch {
+      // Ignore
+    }
   }
 
   const handleJoinHousehold = async (e: React.FormEvent) => {
@@ -257,23 +280,51 @@ export function HouseholdAuthModal({
 
         {/* 3. Gemeinsamer Haushalts-Code & Teilen */}
         <div className="mt-3 rounded-2xl border-2 border-black bg-emerald-50 p-3.5 comic-shadow-sm">
-          <span className="font-comic text-xs uppercase tracking-wide text-emerald-800 font-bold">
-            3. HAUSHALT TEILEN (CODE)
-          </span>
-          <p className="mt-0.5 text-xs text-slate-600">
-            Diesen Code am 2. Smartphone eingeben, um denselben Haushalt live zu teilen:
-          </p>
-
-          <div className="mt-2 flex items-center justify-between rounded-xl border-2 border-black bg-white px-3 py-2">
-            <span className="font-mono text-xs font-bold text-slate-900">
+          <div className="flex items-center justify-between">
+            <span className="font-comic text-xs uppercase tracking-wide text-emerald-800 font-bold">
+              3. HAUSHALT TEILEN &amp; EINLADEN
+            </span>
+            <span className="text-[11px] font-mono font-bold text-emerald-900 bg-emerald-200/70 px-1.5 py-0.5 rounded border border-black">
               {householdState.householdId}
             </span>
+          </div>
+          <p className="mt-1 text-xs text-slate-600">
+            Sende deiner Partnerin / deinem Partner einfach einen 1-Klick-Einladungslink:
+          </p>
+
+          {/* 1-Klick Einladungslink Button per WhatsApp / Native Share */}
+          <button
+            type="button"
+            onClick={handleShareInviteLink}
+            className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-black bg-emerald-500 py-2.5 font-comic text-xs uppercase text-white comic-shadow-sm transition hover:bg-emerald-600 active:translate-y-0.5 font-bold"
+          >
+            {shareSuccess ? (
+              <>
+                <Check className="h-4 w-4 stroke-[3]" />
+                <span>Link in Zwischenablage kopiert!</span>
+              </>
+            ) : (
+              <>
+                <Share2 className="h-4 w-4 stroke-[2.5]" />
+                <span>1-Klick Einladungslink senden (WhatsApp &amp; Co.)</span>
+              </>
+            )}
+          </button>
+
+          {/* Code manuell kopieren */}
+          <div className="mt-2.5 flex items-center justify-between rounded-xl border border-black/40 bg-white px-3 py-1.5">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <Link2 className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+              <span className="font-mono text-[11px] text-slate-700 truncate">
+                apollo-3000.web.app/?join={householdState.householdId}
+              </span>
+            </div>
             <button
               type="button"
-              onClick={handleCopyCode}
-              className="inline-flex items-center gap-1 rounded-lg border border-black bg-amber-400 px-2 py-0.5 font-comic text-xs uppercase text-black font-bold"
+              onClick={handleShareInviteLink}
+              className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-black bg-amber-400 px-2 py-0.5 font-comic text-xs uppercase text-black font-bold hover:bg-amber-300"
             >
-              {copied ? (
+              {shareSuccess ? (
                 <>
                   <Check className="h-3 w-3 stroke-[3]" />
                   <span>Kopiert!</span>
@@ -281,40 +332,46 @@ export function HouseholdAuthModal({
               ) : (
                 <>
                   <Copy className="h-3 w-3 stroke-[2.5]" />
-                  <span>Kopieren</span>
+                  <span>Link kopieren</span>
                 </>
               )}
             </button>
           </div>
 
-          <form onSubmit={handleJoinHousehold} className="mt-3 flex gap-2">
-            <input
-              type="text"
-              placeholder="Anderen Code eingeben..."
-              value={inputHouseholdCode}
-              onChange={(e) => setInputHouseholdCode(e.target.value)}
-              className="min-w-0 flex-1 rounded-xl border-2 border-black bg-white px-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-mono"
-            />
-            <button
-              type="submit"
-              disabled={isJoining}
-              className="inline-flex shrink-0 items-center gap-1 rounded-xl border-2 border-black bg-emerald-400 px-3 py-1.5 font-comic text-xs uppercase text-black comic-shadow-sm active:translate-y-0.5 font-bold hover:bg-emerald-300"
-            >
-              {joinSuccess ? (
-                <>
-                  <Check className="h-3.5 w-3.5 stroke-[3]" />
-                  <span>Verbunden!</span>
-                </>
-              ) : isJoining ? (
-                <span>Lade...</span>
-              ) : (
-                <>
-                  <DoorOpen className="h-3.5 w-3.5 stroke-[2.5]" />
-                  <span>Wechseln</span>
-                </>
-              )}
-            </button>
-          </form>
+          {/* Code eingeben um anderem Haushalt beizutreten */}
+          <div className="mt-3 border-t border-emerald-200/80 pt-2.5">
+            <span className="font-comic text-[11px] uppercase tracking-wide text-emerald-900 font-bold block mb-1">
+              Oder einem anderen Code manuell beitreten:
+            </span>
+            <form onSubmit={handleJoinHousehold} className="flex gap-2">
+              <input
+                type="text"
+                placeholder="z.B. paulinenfriemel-7527"
+                value={inputHouseholdCode}
+                onChange={(e) => setInputHouseholdCode(e.target.value)}
+                className="min-w-0 flex-1 rounded-xl border-2 border-black bg-white px-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-mono"
+              />
+              <button
+                type="submit"
+                disabled={isJoining}
+                className="inline-flex shrink-0 items-center gap-1 rounded-xl border-2 border-black bg-amber-400 px-3 py-1.5 font-comic text-xs uppercase text-black comic-shadow-sm active:translate-y-0.5 font-bold hover:bg-amber-300"
+              >
+                {joinSuccess ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 stroke-[3]" />
+                    <span>Verbunden!</span>
+                  </>
+                ) : isJoining ? (
+                  <span>Lade...</span>
+                ) : (
+                  <>
+                    <DoorOpen className="h-3.5 w-3.5 stroke-[2.5]" />
+                    <span>Beitreten</span>
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
         </div>
 
         {/* 4. BEI NULL STARTEN */}

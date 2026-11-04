@@ -77,6 +77,34 @@ export function App() {
   const [simulateEveningAlert, setSimulateEveningAlert] = useState<boolean>(
     () => new Date().getHours() >= 18
   )
+  const [inviteSuccessToast, setInviteSuccessToast] = useState<string | null>(null)
+
+  // 1-Klick Einladungslink (?join=code oder ?household=code)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      const joinCode = params.get('join') || params.get('household')
+      if (joinCode) {
+        const cleanCode = joinCode.trim().toLowerCase()
+        window.history.replaceState({}, '', window.location.pathname)
+
+        fetchHouseholdState(cleanCode).then((remote) => {
+          if (remote && remote.members && remote.members.length > 0) {
+            setState(remote)
+            setInviteSuccessToast(`Erfolgreich mit "${remote.householdName}" verbunden!`)
+          } else {
+            handleUpdateHouseholdId(cleanCode)
+            setInviteSuccessToast(`Verbunden mit Haushalt: ${cleanCode}!`)
+          }
+          setTimeout(() => setInviteSuccessToast(null), 4500)
+        }).catch(() => {
+          handleUpdateHouseholdId(cleanCode)
+        })
+      }
+    } catch {
+      // Ignore
+    }
+  }, [])
 
   // Firestore Sync Listener & Initial Cloud Sync
   useEffect(() => {
@@ -582,6 +610,19 @@ export function App() {
     <div
       className={`min-h-dvh transition-colors duration-300 ${tabBackgroundClass[activeTab]} text-slate-900 comic-halftone-dots flex flex-col`}
     >
+      {/* 1-Klick Einladungs-Erfolgs-Banner */}
+      {inviteSuccessToast && (
+        <div className="fixed top-4 left-4 right-4 z-50 mx-auto max-w-md animate-bounce rounded-2xl border-3 border-black bg-emerald-400 p-3.5 text-center text-black comic-shadow">
+          <div className="flex items-center justify-center gap-2 font-comic text-base font-bold uppercase tracking-wider">
+            <Sparkles className="h-5 w-5 stroke-[2.5]" />
+            <span>{inviteSuccessToast}</span>
+          </div>
+          <p className="mt-0.5 text-xs font-medium text-black/80">
+            Ihr teilt euch ab sofort diesen Haushalt live in Echtzeit!
+          </p>
+        </div>
+      )}
+
       {/* 1. Volle Breite: Bündiger Vintage Comic Header */}
       <header className="sticky top-0 left-0 right-0 z-30 w-full border-b-3 border-black bg-white/95 backdrop-blur-xl shadow-sm">
         <div className="mx-auto max-w-[430px] px-4 pt-safe pb-2.5">
