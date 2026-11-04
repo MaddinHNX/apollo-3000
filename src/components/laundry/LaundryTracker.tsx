@@ -30,44 +30,44 @@ const PIPELINE_STAGES: {
   label: string
   shortLabel: string
 }[] = [
-  { id: 'idle', label: 'Korb / Bereit', shortLabel: 'Bereit' },
-  { id: 'washing', label: 'Wäscht', shortLabel: 'Wäscht' },
-  { id: 'hanging', label: 'Hängt / Trocknet', shortLabel: 'Hängt' },
-  { id: 'folding', label: 'Falten', shortLabel: 'Falten' },
-  { id: 'done', label: 'Im Schrank', shortLabel: 'Fertig' },
+  { id: 'idle', label: 'Bereit im Korb', shortLabel: 'KORB' },
+  { id: 'washing', label: 'Wäscht mit Schaum', shortLabel: 'WÄSCHT' },
+  { id: 'hanging', label: 'Hängt an der Leine', shortLabel: 'HÄNGT' },
+  { id: 'folding', label: 'Wartet aufs Falten', shortLabel: 'FALTEN' },
+  { id: 'done', label: 'Im Schrank verstaut', shortLabel: 'FERTIG' },
 ]
 
 const STAGE_STYLE: Record<
   LaundryStage,
   {
     badge: string
-    border: string
+    buttonBg: string
     buttonLabel: string
   }
 > = {
   idle: {
-    badge: 'bg-slate-800 text-slate-400',
-    border: 'border-slate-800/80 bg-slate-900/50',
-    buttonLabel: 'Waschgang starten',
+    badge: 'bg-black/60 text-amber-200/60 border-black',
+    buttonBg: 'bg-amber-400 text-black',
+    buttonLabel: 'Waschen starten!',
   },
   washing: {
-    badge: 'bg-sky-500/20 text-sky-300 border border-sky-500/30',
-    border: 'border-sky-500/40 bg-sky-950/15',
-    buttonLabel: 'Aufhängen',
+    badge: 'bg-sky-400 text-black border-black',
+    buttonBg: 'bg-sky-400 text-black',
+    buttonLabel: 'Aufhängen!',
   },
   hanging: {
-    badge: 'bg-teal-500/20 text-teal-300 border border-teal-500/30',
-    border: 'border-teal-500/40 bg-teal-950/15',
-    buttonLabel: 'Abnehmen & Falten',
+    badge: 'bg-emerald-400 text-black border-black',
+    buttonBg: 'bg-emerald-400 text-black',
+    buttonLabel: 'Abnehmen & Falten!',
   },
   folding: {
-    badge: 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
-    border: 'border-amber-500/40 bg-amber-950/15',
-    buttonLabel: 'Verstaut!',
+    badge: 'bg-amber-400 text-black border-black',
+    buttonBg: 'bg-amber-400 text-black',
+    buttonLabel: 'Im Schrank verstaut!',
   },
   done: {
-    badge: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
-    border: 'border-emerald-500/30 bg-emerald-950/10',
+    badge: 'bg-white text-black border-black',
+    buttonBg: 'bg-[#2b190f] text-amber-200',
     buttonLabel: 'Zurücksetzen',
   },
 }
@@ -100,43 +100,43 @@ export function LaundryTracker({
 
   return (
     <div className="space-y-4">
-      {/* Summary Header Card */}
-      <div className="rounded-3xl border border-slate-800 bg-gradient-to-br from-indigo-950/40 via-slate-900 to-slate-900 p-4">
+      {/* Vintage Comic Header Card */}
+      <div className="relative overflow-hidden rounded-3xl border-3 border-black bg-[#2d170c] p-4 comic-shadow">
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-indigo-400">
-              Wäsche-Pipeline
+            <span className="font-comic text-xs uppercase tracking-wider text-amber-400">
+              ★ DIE GROSSE WÄSCHE-SCHLACHT ★
             </span>
-            <h2 className="mt-0.5 text-lg font-bold text-slate-100">
-              6 Sorten · State Machine
+            <h2 className="font-comic text-2xl uppercase tracking-wide text-white">
+              6 Sorten · Pipeline
             </h2>
-            <p className="text-xs text-slate-400">
-              Wäscht → Hängt → Falten → Im Schrank
+            <p className="text-xs font-medium text-amber-100/70">
+              Wäscht → Hängt → Falten → Schrank!
             </p>
           </div>
           <div className="flex flex-col items-end">
-            <span className="rounded-2xl bg-indigo-500/20 px-3 py-1 text-xs font-bold text-indigo-300 border border-indigo-500/30">
-              {activeLoads} aktiv
+            <span className="rounded-2xl border-2 border-black bg-rose-500 px-3 py-1 font-comic text-sm uppercase text-white comic-shadow-sm">
+              {activeLoads} AKTIV
             </span>
           </div>
         </div>
 
-        {/* Visual Pipeline Legend */}
-        <div className="mt-3.5 grid grid-cols-3 gap-2 rounded-2xl bg-slate-950/70 p-2.5 text-center text-[11px]">
-          <div className="flex items-center justify-center gap-1.5 text-sky-300">
-            <Droplets className="h-3.5 w-3.5" />
+        {/* Vintage Comic Stage Legend */}
+        <div className="mt-4 grid grid-cols-3 gap-2 rounded-2xl border-2 border-black bg-[#160c06] p-2.5 text-center font-comic text-xs uppercase">
+          <div className="flex items-center justify-center gap-1.5 text-sky-400">
+            <Droplets className="h-4 w-4 stroke-[2.5]" />
             <span>
               Wäscht ({laundry.filter((l) => l.stage === 'washing').length})
             </span>
           </div>
-          <div className="flex items-center justify-center gap-1.5 text-teal-300">
-            <Wind className="h-3.5 w-3.5" />
+          <div className="flex items-center justify-center gap-1.5 text-emerald-400">
+            <Wind className="h-4 w-4 stroke-[2.5]" />
             <span>
               Hängt ({laundry.filter((l) => l.stage === 'hanging').length})
             </span>
           </div>
-          <div className="flex items-center justify-center gap-1.5 text-amber-300">
-            <FoldHorizontal className="h-3.5 w-3.5" />
+          <div className="flex items-center justify-center gap-1.5 text-amber-400">
+            <FoldHorizontal className="h-4 w-4 stroke-[2.5]" />
             <span>
               Falten ({laundry.filter((l) => l.stage === 'folding').length})
             </span>
@@ -144,7 +144,7 @@ export function LaundryTracker({
         </div>
       </div>
 
-      {/* 6 Laundry Sort Cards */}
+      {/* 6 Laundry Cards */}
       <div className="space-y-3">
         {laundry.map((item) => {
           const Icon = getLaundryIcon(item.iconName)
@@ -157,26 +157,26 @@ export function LaundryTracker({
           return (
             <div
               key={item.id}
-              className={`rounded-3xl border p-4 transition-all duration-200 ${style.border}`}
+              className="rounded-3xl border-3 border-black bg-[#24150b] p-4 comic-shadow"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-800/90 text-slate-200">
-                    <Icon className="h-5 w-5" />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 border-black bg-amber-400 text-black comic-shadow-sm">
+                    <Icon className="h-6 w-6 stroke-[2.5]" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-bold text-slate-100">
+                      <h3 className="font-comic text-lg uppercase tracking-wide text-white">
                         {item.label}
                       </h3>
-                      <span className="rounded-md bg-slate-800 px-1.5 py-0.5 text-[10px] font-semibold text-slate-300">
+                      <span className="rounded-md border border-black bg-black px-1.5 py-0.5 font-comic text-xs text-amber-300">
                         {item.temperature}
                       </span>
                     </div>
-                    <div className="mt-0.5 flex items-center gap-2 text-[11px] text-slate-400">
+                    <div className="mt-0.5 flex items-center gap-2 text-xs text-amber-100/70">
                       <span>
                         Status:{' '}
-                        <strong className="text-slate-200">
+                        <strong className="text-white">
                           {PIPELINE_STAGES[currentStageIdx]?.label}
                         </strong>
                       </span>
@@ -190,14 +190,14 @@ export function LaundryTracker({
                 </div>
 
                 <span
-                  className={`rounded-xl px-2.5 py-1 text-[11px] font-semibold ${style.badge}`}
+                  className={`rounded-xl border-2 px-2.5 py-1 font-comic text-xs uppercase comic-shadow-sm ${style.badge}`}
                 >
                   {PIPELINE_STAGES[currentStageIdx]?.shortLabel}
                 </span>
               </div>
 
-              {/* Visual 5-Step Pipeline Bar */}
-              <div className="mt-3.5 grid grid-cols-5 gap-1">
+              {/* Visual 5-Step Pipeline Bar with bold Comic Outlines */}
+              <div className="mt-3.5 grid grid-cols-5 gap-1.5">
                 {PIPELINE_STAGES.map((stage, idx) => {
                   const isActive = idx === currentStageIdx
                   const isPassed = idx < currentStageIdx
@@ -210,21 +210,21 @@ export function LaundryTracker({
                       className="group flex flex-col items-center gap-1 text-center"
                     >
                       <div
-                        className={`h-1.5 w-full rounded-full transition-all ${
+                        className={`h-2.5 w-full rounded-full border border-black transition-all ${
                           isActive
-                            ? 'bg-indigo-400'
+                            ? 'bg-amber-400 ring-2 ring-black'
                             : isPassed
-                              ? 'bg-indigo-500/45'
-                              : 'bg-slate-800'
+                              ? 'bg-amber-600'
+                              : 'bg-[#140b06]'
                         }`}
                       />
                       <span
-                        className={`text-[10px] ${
+                        className={`font-comic text-[11px] ${
                           isActive
-                            ? 'font-bold text-indigo-300'
+                            ? 'font-bold text-amber-300 scale-105'
                             : isPassed
-                              ? 'text-slate-400'
-                              : 'text-slate-600'
+                              ? 'text-amber-100/60'
+                              : 'text-amber-200/30'
                         }`}
                       >
                         {stage.shortLabel}
@@ -234,31 +234,27 @@ export function LaundryTracker({
                 })}
               </div>
 
-              {/* Action Footer */}
-              <div className="mt-3 flex items-center justify-end border-t border-slate-800/60 pt-2.5">
+              {/* Action Button */}
+              <div className="mt-3.5 flex items-center justify-end border-t-2 border-black/80 pt-3">
                 <button
                   type="button"
                   onClick={() => onAdvanceStage(item.id)}
-                  className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition active:scale-95 ${
-                    item.stage === 'done'
-                      ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                      : 'bg-indigo-500 text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-400'
-                  }`}
+                  className={`inline-flex items-center gap-1.5 rounded-2xl border-2 border-black px-4 py-1.5 font-comic text-xs uppercase tracking-wider comic-shadow-sm transition active:translate-x-0.5 active:translate-y-0.5 ${style.buttonBg}`}
                 >
                   {item.stage === 'done' ? (
                     <>
-                      <RotateCcw className="h-3.5 w-3.5" />
+                      <RotateCcw className="h-3.5 w-3.5 stroke-[2.5]" />
                       <span>{style.buttonLabel}</span>
                     </>
                   ) : item.stage === 'folding' ? (
                     <>
-                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      <CheckCircle2 className="h-3.5 w-3.5 stroke-[2.5]" />
                       <span>{style.buttonLabel}</span>
                     </>
                   ) : (
                     <>
                       <span>{style.buttonLabel}</span>
-                      <ChevronRight className="h-3.5 w-3.5" />
+                      <ChevronRight className="h-3.5 w-3.5 stroke-[2.5]" />
                     </>
                   )}
                 </button>

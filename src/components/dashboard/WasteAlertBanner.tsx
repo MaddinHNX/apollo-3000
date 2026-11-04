@@ -1,4 +1,4 @@
-import { BellRing, Check, Clock, Trash2 } from 'lucide-react'
+import { BellRing, Check, Clock } from 'lucide-react'
 import type { HouseholdMember, WasteScheduleItem } from '../../types/household'
 
 interface WasteAlertBannerProps {
@@ -29,7 +29,6 @@ export function WasteAlertBanner({
 }: WasteAlertBannerProps) {
   const isEveningWindow = currentHour >= 18 || simulateEveningAlert
 
-  // Items picked up tomorrow (with evening-before reminder) or today
   const urgentItems = wasteItems.filter((item) => {
     const days = getDaysUntil(item.nextPickupDate)
     if (days === 0) return true
@@ -44,39 +43,25 @@ export function WasteAlertBanner({
   return (
     <section
       aria-label="Müll-Erinnerung"
-      className={`rounded-3xl border p-4 transition-all ${
-        isEveningWindow
-          ? 'border-amber-500/50 bg-gradient-to-br from-amber-950/40 via-slate-900 to-slate-900 shadow-lg shadow-amber-950/20'
-          : 'border-slate-800 bg-slate-900/70'
-      }`}
+      className="relative overflow-hidden rounded-3xl border-3 border-black bg-[#2d1209] p-4 comic-shadow"
     >
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <div
-            className={`flex h-8 w-8 items-center justify-center rounded-xl ${
-              isEveningWindow
-                ? 'bg-amber-500/20 text-amber-300'
-                : 'bg-slate-800 text-slate-300'
-            }`}
-          >
-            {isEveningWindow ? (
-              <BellRing className="h-4 w-4 animate-bounce" />
-            ) : (
-              <Trash2 className="h-4 w-4" />
-            )}
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border-3 border-black bg-rose-500 text-white comic-shadow-sm">
+            <BellRing className="h-5 w-5 animate-bounce stroke-[2.5]" />
           </div>
           <div>
-            <div className="flex items-center gap-1.5">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-amber-300">
+            <div className="flex items-center gap-2">
+              <h3 className="font-comic text-base tracking-wide text-amber-300 uppercase">
                 {isEveningWindow
-                  ? 'Vorabend-Alarm (18:00+)'
-                  : 'Morgen Abholung'}
+                  ? '⚡ VORABEND-ALARM (18:00+) ⚡'
+                  : 'MORGEN ABHOLUNG!'}
               </h3>
             </div>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-xs font-medium text-amber-100/80">
               {isEveningWindow
-                ? 'Jetzt rausstellen für die morgige Abfuhr!'
-                : 'Erinnerung ab 18:00 Uhr aktiv'}
+                ? 'Jetzt an die Straße stellen!'
+                : 'Erinnerung am Vorabend aktiv'}
             </p>
           </div>
         </div>
@@ -84,19 +69,14 @@ export function WasteAlertBanner({
         <button
           type="button"
           onClick={onToggleSimulateEvening}
-          title="18:00+ Vorabend-Modus testen"
-          className={`inline-flex items-center gap-1 rounded-xl border px-2.5 py-1 text-[11px] font-medium transition ${
-            simulateEveningAlert
-              ? 'border-amber-500/40 bg-amber-500/20 text-amber-200'
-              : 'border-slate-700 bg-slate-800/80 text-slate-400 hover:text-slate-200'
-          }`}
+          className="inline-flex items-center gap-1 rounded-xl border-2 border-black bg-[#1f0d06] px-2.5 py-1 font-comic text-xs uppercase text-amber-300 transition hover:bg-black active:translate-y-0.5"
         >
           <Clock className="h-3 w-3" />
           <span>18:00 {simulateEveningAlert ? 'An' : 'Test'}</span>
         </button>
       </div>
 
-      <div className="mt-3 space-y-2">
+      <div className="mt-3.5 space-y-2">
         {urgentItems.map((item) => {
           const days = getDaysUntil(item.nextPickupDate)
           const assignee = members.find((m) => m.id === item.assignedTo)
@@ -104,23 +84,23 @@ export function WasteAlertBanner({
           return (
             <div
               key={item.id}
-              className="flex items-center justify-between gap-3 rounded-2xl border border-slate-800/90 bg-slate-950/70 px-3 py-2.5"
+              className="flex items-center justify-between gap-2 rounded-2xl border-2 border-black bg-[#1a0a04] p-3 comic-shadow-sm"
             >
               <div className="flex items-center gap-2.5">
                 <span
-                  className="h-3.5 w-3.5 shrink-0 rounded-full ring-4 ring-slate-900"
+                  className="h-4 w-4 shrink-0 rounded-full border-2 border-black"
                   style={{ backgroundColor: item.color }}
                 />
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-slate-100">
+                    <span className="font-comic text-lg text-white">
                       {item.label}
                     </span>
-                    <span className="rounded-md bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300">
-                      {days === 0 ? 'Heute' : 'Morgen früh'}
+                    <span className="rounded-md border border-black bg-amber-400 px-1.5 py-0.5 font-comic text-xs text-black">
+                      {days === 0 ? 'HEUTE' : 'MORGEN FRÜH'}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-amber-100/70">
                     {item.notes}
                     {assignee ? ` · ${assignee.avatar} ${assignee.name}` : ''}
                   </p>
@@ -130,10 +110,10 @@ export function WasteAlertBanner({
               <button
                 type="button"
                 onClick={() => onMarkPutOut(item.id)}
-                className="inline-flex shrink-0 items-center gap-1 rounded-xl bg-emerald-500/20 px-2.5 py-1.5 text-xs font-semibold text-emerald-300 border border-emerald-500/30 transition hover:bg-emerald-500/30 active:scale-95"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border-2 border-black bg-emerald-400 px-3 py-1.5 font-comic text-xs uppercase tracking-wider text-black comic-shadow-sm transition hover:bg-emerald-300 active:translate-x-0.5 active:translate-y-0.5"
               >
-                <Check className="h-3.5 w-3.5" />
-                <span>Steht draußen</span>
+                <Check className="h-3.5 w-3.5 stroke-[3]" />
+                <span>Steht draußen!</span>
               </button>
             </div>
           )

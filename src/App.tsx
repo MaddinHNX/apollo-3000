@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react'
 import {
-  Bell,
-  BellOff,
   Calendar,
   Check,
-  Database,
+  ExternalLink,
+  Flame,
   RefreshCcw,
-  Rocket,
   Sparkles,
+  Zap,
 } from 'lucide-react'
 import { DishwasherQuickToggle } from './components/dashboard/DishwasherQuickToggle'
 import {
@@ -28,7 +27,7 @@ import type {
   WasteType,
 } from './types/household'
 
-const STORAGE_KEY = 'apollo3000_household_state_v1'
+const STORAGE_KEY = 'apollo3000_household_state_v2'
 
 const DISHWASHER_SEQUENCE: DishwasherStatus[] = [
   'empty',
@@ -53,7 +52,7 @@ export function App() {
         return JSON.parse(saved) as HouseholdState
       }
     } catch {
-      // Fallback to mock data if localStorage fails
+      // Fallback
     }
     return INITIAL_HOUSEHOLD_STATE
   })
@@ -67,19 +66,19 @@ export function App() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
     } catch {
-      // Ignore storage quota errors
+      // Ignore quota errors
     }
   }, [state])
 
   const activeMember =
     state.members.find((m) => m.id === state.activeMemberId) ?? state.members[0]
 
-  // 1. Toggle active user (Person A <-> Person B)
+  // Switch Active Person
   const handleSelectMember = (memberId: string) => {
     setState((prev) => ({ ...prev, activeMemberId: memberId }))
   }
 
-  // 2. Dishwasher 1-Tap Status Toggle
+  // Dishwasher Toggle
   const handleCycleDishwasher = (targetStatus?: DishwasherStatus) => {
     setState((prev) => {
       const currentIdx = DISHWASHER_SEQUENCE.indexOf(prev.dishwasher.status)
@@ -98,7 +97,7 @@ export function App() {
     })
   }
 
-  // 3. Laundry State Machine Transition
+  // Laundry Stage Advancement
   const handleAdvanceLaundry = (
     laundryId: LaundryType,
     targetStage?: LaundryStage
@@ -127,7 +126,7 @@ export function App() {
     }))
   }
 
-  // 4. Waste Management Actions
+  // Waste Management
   const handleMarkWastePutOut = (wasteId: WasteType) => {
     setState((prev) => ({
       ...prev,
@@ -148,18 +147,7 @@ export function App() {
     }))
   }
 
-  const handleToggleWasteReminder = (wasteId: WasteType) => {
-    setState((prev) => ({
-      ...prev,
-      waste: prev.waste.map((w) =>
-        w.id === wasteId
-          ? { ...w, reminderEveningBefore: !w.reminderEveningBefore }
-          : w
-      ),
-    }))
-  }
-
-  // 5. Complete Chore & Rotate Person A <-> Person B
+  // Complete Chore with Auto A/B Rotation
   const handleCompleteChore = (choreId: string) => {
     const todayStr = new Date().toISOString().split('T')[0]
     setState((prev) => ({
@@ -184,7 +172,7 @@ export function App() {
     setState(INITIAL_HOUSEHOLD_STATE)
   }
 
-  // Badges for BottomNav
+  // Badges
   const activeLaundryCount = state.laundry.filter(
     (l) => l.stage !== 'idle' && l.stage !== 'done'
   ).length
@@ -203,40 +191,33 @@ export function App() {
   }).length
 
   return (
-    <div className="min-h-dvh bg-slate-950 text-slate-100">
-      {/* Mobile-First Container (390px–430px optimal viewport) */}
+    <div className="min-h-dvh bg-[#150e09] text-[#fffdf5] comic-dots">
+      {/* Mobile-First Container (390px Viewport) */}
       <div className="mx-auto flex min-h-dvh max-w-[430px] flex-col px-4 pb-28 pt-safe">
-        {/* Top App Bar */}
-        <header className="sticky top-0 z-30 -mx-4 mb-4 border-b border-slate-800/80 bg-slate-950/85 px-4 py-3 backdrop-blur-xl">
+        {/* Vintage Comic Header */}
+        <header className="sticky top-0 z-30 -mx-4 mb-4 border-b-3 border-black bg-[#1b1009]/95 px-4 py-3 backdrop-blur-xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-fuchsia-500 text-white shadow-md shadow-indigo-500/20">
-                <Rocket className="h-5 w-5" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-black bg-gradient-to-tr from-amber-400 to-rose-500 text-black comic-shadow-sm">
+                <Flame className="h-6 w-6 stroke-[2.5]" />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h1 className="text-base font-extrabold tracking-tight text-white">
-                    Apollo 3000
+                  <h1 className="font-comic text-2xl tracking-wider text-amber-300">
+                    APOLLO 3000
                   </h1>
-                  <span
-                    className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide ${
-                      isFirebaseConfigured
-                        ? 'bg-emerald-500/15 text-emerald-300'
-                        : 'bg-indigo-500/15 text-indigo-300'
-                    }`}
-                  >
-                    <Database className="h-2.5 w-2.5" />
-                    {isFirebaseConfigured ? 'Firebase Live' : 'Mock-Modus'}
+                  <span className="rounded-md border border-black bg-rose-500 px-1.5 py-0.2 font-comic text-[10px] uppercase text-white comic-shadow-sm">
+                    {isFirebaseConfigured ? 'FIREBASE' : 'COMIC ED.'}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400">
-                  2-Personen Haushalts-Cockpit
+                <p className="text-[11px] font-semibold text-amber-200/70">
+                  2-Helden Haushalts-Kommando
                 </p>
               </div>
             </div>
 
-            {/* Active Member Switcher */}
-            <div className="flex items-center gap-1 rounded-2xl border border-slate-800 bg-slate-900/90 p-1">
+            {/* Member Switcher */}
+            <div className="flex items-center gap-1 rounded-2xl border-2 border-black bg-[#100905] p-1 comic-shadow-sm">
               {state.members.map((member) => {
                 const isSelected = member.id === activeMember.id
                 return (
@@ -244,10 +225,10 @@ export function App() {
                     key={member.id}
                     type="button"
                     onClick={() => handleSelectMember(member.id)}
-                    className={`flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-semibold transition ${
+                    className={`flex items-center gap-1 rounded-xl px-2.5 py-1 font-comic text-xs uppercase tracking-wide transition ${
                       isSelected
-                        ? 'bg-slate-100 text-slate-950 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-200'
+                        ? 'border border-black bg-amber-400 text-black font-bold comic-shadow-sm'
+                        : 'text-amber-200/50 hover:text-amber-100'
                     }`}
                   >
                     <span>{member.avatar}</span>
@@ -259,10 +240,29 @@ export function App() {
           </div>
         </header>
 
-        {/* Main Content View */}
+        {/* Main Content */}
         <main className="flex-1 space-y-4">
           {activeTab === 'dashboard' && (
             <>
+              {/* Figma Board Quick Link Notice */}
+              <div className="flex items-center justify-between rounded-2xl border-2 border-black bg-amber-400/15 p-3 comic-shadow-sm">
+                <div className="flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-amber-400 stroke-[2.5]" />
+                  <span className="font-comic text-xs uppercase tracking-wide text-amber-300">
+                    Figma Design Board aktiv
+                  </span>
+                </div>
+                <a
+                  href="https://www.figma.com/design/yGBQ4VkH5lbOjLPAIRHEyX"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 rounded-lg border border-black bg-amber-400 px-2 py-0.5 font-comic text-[11px] uppercase text-black"
+                >
+                  <span>Board öffnen</span>
+                  <ExternalLink className="h-2.5 w-2.5" />
+                </a>
+              </div>
+
               <WasteAlertBanner
                 wasteItems={state.waste}
                 members={state.members}
@@ -286,23 +286,23 @@ export function App() {
                 onCompleteChore={handleCompleteChore}
               />
 
-              {/* Compact Laundry Teaser on Dashboard */}
-              <section className="rounded-3xl border border-slate-800/90 bg-slate-900/50 p-4">
+              {/* Laundry Teaser */}
+              <section className="rounded-3xl border-3 border-black bg-[#22150d] p-4 comic-shadow">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-sm font-bold text-slate-100">
-                      Aktive Wäsche-Pipeline
+                    <h2 className="font-comic text-lg uppercase tracking-wide text-white">
+                      Wäsche-Pipeline
                     </h2>
-                    <p className="text-xs text-slate-400">
-                      {activeLaundryCount} von 6 Sorten in Bearbeitung
+                    <p className="text-xs text-amber-100/70">
+                      {activeLaundryCount} von 6 Sorten in Arbeit
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setActiveTab('laundry')}
-                    className="rounded-xl bg-slate-800 px-3 py-1.5 text-xs font-semibold text-indigo-300 hover:bg-slate-700"
+                    className="rounded-2xl border-2 border-black bg-amber-400 px-3.5 py-1.5 font-comic text-xs uppercase text-black comic-shadow-sm hover:bg-amber-300"
                   >
-                    Alle 6 Sorten →
+                    Alle Sorten →
                   </button>
                 </div>
               </section>
@@ -319,15 +319,15 @@ export function App() {
 
           {activeTab === 'waste' && (
             <section className="space-y-3">
-              <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-4">
-                <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
-                  Müllkalender & Vorabend-Reminder
+              <div className="rounded-3xl border-3 border-black bg-[#24150b] p-4 comic-shadow">
+                <span className="font-comic text-xs uppercase tracking-wider text-amber-400">
+                  MÜLL-MISSIONEN
                 </span>
-                <h2 className="mt-0.5 text-lg font-bold text-slate-100">
-                  5 Fraktionen im Überblick
+                <h2 className="font-comic text-2xl uppercase tracking-wide text-white">
+                  5 Fraktionen
                 </h2>
-                <p className="text-xs text-slate-400">
-                  Erinnerung am Vorabend ab 18:00 Uhr automatisch im Dashboard
+                <p className="text-xs text-amber-100/70">
+                  Vorabend-Alarmierung automatisch ab 18:00 Uhr
                 </p>
               </div>
 
@@ -338,54 +338,31 @@ export function App() {
                 return (
                   <div
                     key={item.id}
-                    className="rounded-3xl border border-slate-800/90 bg-slate-900/50 p-4"
+                    className="rounded-3xl border-3 border-black bg-[#1f1007] p-4 comic-shadow"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <span
-                          className="h-4 w-4 shrink-0 rounded-full ring-4 ring-slate-800"
+                          className="h-4 w-4 shrink-0 rounded-full border-2 border-black"
                           style={{ backgroundColor: item.color }}
                         />
                         <div>
-                          <h3 className="text-sm font-bold text-slate-100">
+                          <h3 className="font-comic text-xl uppercase tracking-wide text-white">
                             {item.label}
                           </h3>
-                          <p className="text-xs text-slate-400">{item.notes}</p>
+                          <p className="text-xs text-amber-100/70">{item.notes}</p>
                         </div>
                       </div>
-
-                      <button
-                        type="button"
-                        onClick={() => handleToggleWasteReminder(item.id)}
-                        className={`inline-flex items-center gap-1 rounded-xl border px-2.5 py-1 text-[11px] font-medium transition ${
-                          item.reminderEveningBefore
-                            ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-300'
-                            : 'border-slate-800 bg-slate-900 text-slate-500'
-                        }`}
-                      >
-                        {item.reminderEveningBefore ? (
-                          <>
-                            <Bell className="h-3 w-3" />
-                            <span>18:00 Vorabend</span>
-                          </>
-                        ) : (
-                          <>
-                            <BellOff className="h-3 w-3" />
-                            <span>Stumm</span>
-                          </>
-                        )}
-                      </button>
                     </div>
 
-                    <div className="mt-3.5 flex items-center justify-between border-t border-slate-800/70 pt-3 text-xs">
-                      <div className="flex items-center gap-2 text-slate-300">
-                        <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                    <div className="mt-3.5 flex items-center justify-between border-t-2 border-black/80 pt-3 text-xs">
+                      <div className="flex items-center gap-2 text-amber-200">
+                        <Calendar className="h-3.5 w-3.5 text-amber-400" />
                         <span>
-                          Nächste Abholung:{' '}
-                          <strong>{item.nextPickupDate}</strong>
+                          Abholung: <strong>{item.nextPickupDate}</strong>
                         </span>
                         {assignee && (
-                          <span className="text-slate-400">
+                          <span className="text-amber-300/80">
                             · {assignee.avatar} {assignee.name}
                           </span>
                         )}
@@ -394,10 +371,10 @@ export function App() {
                       <button
                         type="button"
                         onClick={() => handleMarkWastePutOut(item.id)}
-                        className="inline-flex items-center gap-1 rounded-xl bg-slate-800 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-300 hover:bg-slate-700"
+                        className="inline-flex items-center gap-1 rounded-xl border-2 border-black bg-emerald-400 px-3 py-1.5 font-comic text-xs uppercase text-black comic-shadow-sm hover:bg-emerald-300"
                       >
-                        <Check className="h-3 w-3" />
-                        <span>Erledigt (+14 Tg.)</span>
+                        <Check className="h-3 w-3 stroke-[3]" />
+                        <span>Fertig (+14 Tg.)</span>
                       </button>
                     </div>
                   </div>
@@ -408,46 +385,42 @@ export function App() {
 
           {activeTab === 'schedule' && (
             <section className="space-y-4">
-              <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-4">
-                <span className="text-xs font-semibold uppercase tracking-wider text-fuchsia-400">
-                  Wochenplan & Fairness
+              <div className="rounded-3xl border-3 border-black bg-[#28150c] p-4 comic-shadow">
+                <span className="font-comic text-xs uppercase tracking-wider text-rose-400">
+                  TEAM-FAIRNESS
                 </span>
-                <h2 className="mt-0.5 text-lg font-bold text-slate-100">
-                  2-Personen A/B-Rotation
+                <h2 className="font-comic text-2xl uppercase tracking-wide text-white">
+                  A/B-Rotation
                 </h2>
-                <p className="text-xs text-slate-400">
-                  Jede erledigte Standard-Aufgabe wechselt automatisch zwischen{' '}
-                  {state.members[0]?.name} und {state.members[1]?.name}.
+                <p className="text-xs text-amber-100/70">
+                  Gerechte Verteilung für {state.members[0]?.name} &amp;{' '}
+                  {state.members[1]?.name}
                 </p>
 
-                <div className="mt-3 grid grid-cols-2 gap-2.5">
+                <div className="mt-4 grid grid-cols-2 gap-2.5">
                   {state.members.map((m) => {
                     const assignedChores = state.chores.filter(
                       (c) => c.assignedTo === m.id
-                    ).length
-                    const assignedLaundry = state.laundry.filter(
-                      (l) => l.assignedTo === m.id && l.stage !== 'done'
                     ).length
 
                     return (
                       <div
                         key={m.id}
-                        className="rounded-2xl border border-slate-800 bg-slate-950/70 p-3"
+                        className="rounded-2xl border-2 border-black bg-[#160c07] p-3 comic-shadow-sm"
                       >
                         <div className="flex items-center gap-2">
-                          <span className="text-lg">{m.avatar}</span>
+                          <span className="text-2xl">{m.avatar}</span>
                           <div>
-                            <div className="text-xs font-bold text-slate-100">
+                            <div className="font-comic text-base text-amber-300">
                               {m.name}
                             </div>
-                            <div className="text-[10px] text-slate-400">
+                            <div className="text-[10px] font-semibold text-amber-200/50">
                               {m.roleLabel}
                             </div>
                           </div>
                         </div>
-                        <div className="mt-2 flex items-center justify-between text-[11px] text-slate-400">
-                          <span>Putzplan: {assignedChores}</span>
-                          <span>Wäsche: {assignedLaundry}</span>
+                        <div className="mt-2 text-xs font-semibold text-amber-100/80">
+                          Aufgaben: {assignedChores}
                         </div>
                       </div>
                     )
@@ -461,15 +434,15 @@ export function App() {
                 onCompleteChore={handleCompleteChore}
               />
 
-              <div className="flex items-center justify-between rounded-2xl border border-slate-800/80 bg-slate-900/40 px-4 py-3 text-xs text-slate-400">
+              <div className="flex items-center justify-between rounded-2xl border-2 border-black bg-[#1c0f08] px-4 py-3 text-xs text-amber-200/70 comic-shadow-sm">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-indigo-400" />
-                  <span>Mock-Daten auf Ausgangszustand zurücksetzen</span>
+                  <Sparkles className="h-4 w-4 text-amber-400" />
+                  <span>Demo-Zustand zurücksetzen</span>
                 </div>
                 <button
                   type="button"
                   onClick={handleResetDemo}
-                  className="inline-flex items-center gap-1 rounded-xl bg-slate-800 px-2.5 py-1.5 text-[11px] font-semibold text-slate-200 hover:bg-slate-700"
+                  className="inline-flex items-center gap-1 rounded-xl border border-black bg-amber-400 px-2.5 py-1 font-comic text-xs uppercase text-black"
                 >
                   <RefreshCcw className="h-3 w-3" />
                   <span>Reset</span>
@@ -480,7 +453,6 @@ export function App() {
         </main>
       </div>
 
-      {/* Fixed Mobile Bottom Navigation */}
       <BottomNav
         activeTab={activeTab}
         onSelectTab={setActiveTab}

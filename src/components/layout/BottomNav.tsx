@@ -12,17 +12,17 @@ const NAV_ITEMS: {
   label: string
   icon: typeof Home
 }[] = [
-  { id: 'dashboard', label: 'Heute', icon: Home },
-  { id: 'laundry', label: 'Wäsche', icon: Shirt },
-  { id: 'waste', label: 'Müll', icon: Trash2 },
-  { id: 'schedule', label: 'Wochenplan', icon: CalendarCheck2 },
+  { id: 'dashboard', label: 'HEUTE', icon: Home },
+  { id: 'laundry', label: 'WÄSCHE', icon: Shirt },
+  { id: 'waste', label: 'MÜLL', icon: Trash2 },
+  { id: 'schedule', label: 'PLAN', icon: CalendarCheck2 },
 ]
 
 export function BottomNav({ activeTab, onSelectTab, badges = {} }: BottomNavProps) {
   return (
     <nav
       aria-label="Hauptnavigation"
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-800/80 bg-slate-950/90 backdrop-blur-xl pb-safe"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t-3 border-black bg-[#1b1009]/95 backdrop-blur-xl pb-safe"
     >
       <div className="mx-auto flex max-w-[430px] items-center justify-around px-2 pt-2">
         {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
@@ -34,31 +34,33 @@ export function BottomNav({ activeTab, onSelectTab, badges = {} }: BottomNavProp
               key={id}
               type="button"
               onClick={() => onSelectTab(id)}
-              className={`group relative flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-1.5 transition-all duration-200 ${
+              className={`group relative flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-1.5 transition-all duration-150 ${
                 isActive
-                  ? 'text-indigo-400'
-                  : 'text-slate-400 hover:text-slate-200 active:scale-95'
+                  ? 'text-amber-400'
+                  : 'text-amber-200/50 hover:text-amber-100 active:scale-95'
               }`}
             >
               <div
-                className={`relative flex h-8 w-12 items-center justify-center rounded-full transition-colors ${
-                  isActive ? 'bg-indigo-500/15' : 'group-hover:bg-slate-800/50'
+                className={`relative flex h-8 w-12 items-center justify-center rounded-2xl transition-all ${
+                  isActive
+                    ? 'border-2 border-black bg-amber-400 text-black comic-shadow-sm -translate-y-0.5'
+                    : 'group-hover:bg-black/30'
                 }`}
               >
                 <Icon
-                  className={`h-5 w-5 transition-transform duration-200 ${
-                    isActive ? 'scale-110 stroke-[2.4]' : 'stroke-[1.8]'
+                  className={`h-5 w-5 transition-transform duration-150 ${
+                    isActive ? 'scale-110 stroke-[2.8]' : 'stroke-[2]'
                   }`}
                 />
                 {badgeCount > 0 && (
-                  <span className="absolute -right-0.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold leading-none text-white shadow-sm">
+                  <span className="absolute -right-1 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full border border-black bg-rose-500 px-1 font-comic text-[10px] font-bold leading-none text-white comic-shadow-sm">
                     {badgeCount}
                   </span>
                 )}
               </div>
               <span
-                className={`text-[11px] tracking-tight ${
-                  isActive ? 'font-semibold text-indigo-300' : 'font-medium'
+                className={`font-comic text-xs uppercase tracking-wider ${
+                  isActive ? 'text-amber-300' : 'text-amber-200/50'
                 }`}
               >
                 {label}
