@@ -1,15 +1,6 @@
 // Google Calendar Integration Service for Apollo 3000
-import type { StandardChore } from '../types/household'
-
-export interface GoogleCalendarEventPayload {
-  title: string
-  description?: string
-  date: string // YYYY-MM-DD
-  startTime?: string // HH:mm (optional, default 10:00)
-  durationMinutes: number
-}
-
-const STORAGE_CALENDAR_TOKEN_KEY = 'apollo3000_gcal_access_token'
+import type { HouseholdMember, KitchenChore, StandardChore } from '../types/household'
+import { getChoreDueInfo } from '../components/dashboard/TodayChoresList'
 
 export class GoogleCalendarService {
   /**
@@ -41,76 +32,79 @@ export class GoogleCalendarService {
     return url
   }
 
-  static saveAccessToken(token: string): void {
-    localStorage.setItem(STORAGE_CALENDAR_TOKEN_KEY, token)
-  }
-
-  static getAccessToken(): string | null {
-    return localStorage.getItem(STORAGE_CALENDAR_TOKEN_KEY)
-  }
-
-  static removeAccessToken(): void {
-    localStorage.removeItem(STORAGE_CALENDAR_TOKEN_KEY)
-  }
-
-  static async addEventToGoogleCalendar(
-    token: string,
-    chore: StandardChore,
-    assigneeName: string,
-    calendarId: string = 'primary'
-  ): Promise<{ success: boolean; eventLink?: string; error?: string }> {
-    try {
-      const now = new Date()
-      const startDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 0, 0)
-      const endDateTime = new Date(startDateTime.getTime() + chore.estimatedMinutes * 60 * 1000)
-
-      const body = {
-        summary: `Apollo 3000: ${chore.title} (${assigneeName})`,
-        description: `${chore.description || chore.title}\n\nZuständigkeit: ${assigneeName}\nDauer: ca. ${chore.estimatedMinutes} Min.\nIntervall: alle ${chore.intervalDays} Tage`,
-        start: {
-          dateTime: startDateTime.toISOString(),
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        },
-        end: {
-          dateTime: endDateTime.toISOString(),
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        },
-        reminders: {
-          useDefault: false,
-          overrides: [
-            { method: 'popup', minutes: 30 },
-            { method: 'popup', minutes: 120 },
-          ],
-        },
-      }
-
-      const response = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(body),
-        }
-      )
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}))
-        return {
-          success: false,
-          error: errData.error?.message || `HTTP Fehler ${response.status}`,
-        }
-      }
-
-      const data = await response.json()
-      return { success: true, eventLink: data.htmlLink }
-    } catch (err: unknown) {
-      return {
-        success: false,
-        error: err instanceof Error ? err.message : 'Unbekannter Fehler',
-      }
+  /**
+   * Generates a standard .ics iCalendar file content for ALL weekly chores and kitchen tasks.
+   * This allows importing the complete schedule into Google Calendar with a single click.
+   */
+  static generateIcsContent(
+    chores: (StandardChore | KitchenChore)[],
+    members: HouseholdMember[],
+    householdName: string
+  ): string {
+    const formatIcsDate = (date: Date): string => {
+      return date.toISOString().replace(/-|:|\.\d\d\d/g, '').slice(0, 15) + 'Z'
     }
+
+    const lines: string[] = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Apollo 3000//Haushaltsplan//DE',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      `X-WR-CALNAME:Apollo 3000 - ${householdName}`,
+      'X-WR-TIMEZONE:Europe/Berlin',
+    ]
+
+    const now = new Date()
+
+    chores.forEach((chore, index) => {
+      const dueInfo = getChoreDueInfo(chore as unknown as StandardChore)
+      const assignee = members.find((m) => m.id === chore.assignedTo)
+      const assigneeName = assignee ? assignee.name : 'Haushalt'
+
+      const eventStart = new Date(now)
+      eventStart.setDate(eventStart.getDate() + Math.max(0, dueInfo.daysRemaining))
+      eventStart.setHours(10 + (index % 4), 0, 0, 0) // Verteilt Zeiten auf 10:00, 11:00, etc.
+
+      const eventEnd = new Date(eventStart.getTime() + (chore.estimatedMinutes || 20) * 60 * 1000)
+
+      lines.push('BEGIN:VEVENT')
+      lines.push(`UID:apollo3000-${chore.id}-${eventStart.getTime()}@apollo3000.app`)
+      lines.push(`DTSTAMP:${formatIcsDate(now)}`)
+      lines.push(`DTSTART:${formatIcsDate(eventStart)}`)
+      lines.push(`DTEND:${formatIcsDate(eventEnd)}`)
+      lines.push(`SUMMARY:Apollo 3000: ${chore.title} (${assigneeName})`)
+      lines.push(
+        `DESCRIPTION:${chore.description || chore.title}\\nZuständig: ${assigneeName}\\nDauer: ca. ${chore.estimatedMinutes} Min.\\nIntervall: alle ${chore.intervalDays} Tage`
+      )
+      lines.push('STATUS:CONFIRMED')
+      lines.push('BEGIN:VALARM')
+      lines.push('TRIGGER:-PT30M')
+      lines.push('ACTION:DISPLAY')
+      lines.push(`DESCRIPTION:Erinnerung: ${chore.title}`)
+      lines.push('END:VALARM')
+      lines.push('END:VEVENT')
+    })
+
+    lines.push('END:VCALENDAR')
+    return lines.join('\r\n')
+  }
+
+  /**
+   * Downloads the complete weekly schedule as .ics file that imports instantly into Google Calendar / Apple Calendar
+   */
+  static downloadIcsFile(
+    chores: (StandardChore | KitchenChore)[],
+    members: HouseholdMember[],
+    householdName: string
+  ): void {
+    const icsContent = this.generateIcsContent(chores, members, householdName)
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' })
+    const link = document.createElement('a')
+    link.href = window.URL.createObjectURL(blob)
+    link.setAttribute('download', `apollo3000-wochenplan-${new Date().toISOString().split('T')[0]}.ics`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 }

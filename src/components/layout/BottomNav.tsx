@@ -30,12 +30,12 @@ export function BottomNav({ activeTab, onSelectTab, badges = {} }: BottomNavProp
 
   return (
     <>
-      {/* 1. Flexibler schwebender Putzeimer als Home-Button (Links unten über der Leiste) */}
+      {/* 1. Flexibler schwebender Putzeimer als Home-Button (Weiter nach oben gesetzt: bottom-28) */}
       <button
         type="button"
         title="Zurück zur Startseite (Heute)"
         onClick={() => onSelectTab('dashboard')}
-        className={`fixed bottom-20 left-4 z-50 flex items-center gap-2 rounded-full border-3 border-black p-2.5 comic-shadow transition-all duration-200 active:scale-95 ${
+        className={`fixed bottom-28 left-4 z-50 flex items-center gap-2 rounded-full border-3 border-black p-2.5 comic-shadow transition-all duration-200 active:scale-95 ${
           isHomeActive
             ? 'bg-amber-400 scale-105 ring-4 ring-amber-300/60'
             : 'bg-white hover:bg-amber-100 hover:scale-105'

@@ -2,11 +2,13 @@ import {
   CalendarDays,
   CheckCircle2,
   Crown,
+  Download,
   History,
   Medal,
   Settings2,
   Trophy,
 } from 'lucide-react'
+import { GoogleCalendarService } from '../../services/googleCalendar'
 import type {
   HouseholdMember,
   HouseholdState,
@@ -275,23 +277,44 @@ export function WeekDashboard({
         </div>
       </section>
 
-      {/* 3. Tasks der Woche */}
+      {/* 3. Tasks der Woche & Automatischer Kalender-Import */}
       <section className="rounded-3xl border-3 border-black bg-white p-4 comic-shadow">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <CalendarDays className="h-5 w-5 text-amber-600 stroke-[2.5]" />
             <h3 className="font-comic text-xl uppercase tracking-wide text-slate-900">
               Wochen-Aufgaben ({state.chores.length})
             </h3>
           </div>
-          <button
-            type="button"
-            onClick={onOpenSettings}
-            className="inline-flex items-center gap-1.5 rounded-xl border-2 border-black bg-amber-400 px-2.5 py-1 font-comic text-xs uppercase text-black comic-shadow-sm hover:bg-amber-300 font-bold"
-          >
-            <Settings2 className="h-3.5 w-3.5 stroke-[2.5]" />
-            <span>Tasks &amp; XP anpassen</span>
-          </button>
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            {/* Automatischer Kalender-Export (Alles auf einmal) */}
+            <button
+              type="button"
+              title="Alle Aufgaben dieser Woche als Kalender-Datei (.ics) herunterladen / in Google Kalender importieren"
+              onClick={() => {
+                const allChores = [...state.chores, ...(state.kitchenChores || [])]
+                GoogleCalendarService.downloadIcsFile(
+                  allChores,
+                  members,
+                  state.householdName
+                )
+              }}
+              className="inline-flex items-center gap-1.5 rounded-xl border-2 border-black bg-emerald-400 px-2.5 py-1 font-comic text-xs uppercase text-black comic-shadow-sm hover:bg-emerald-300 font-bold active:translate-y-0.5"
+            >
+              <Download className="h-3.5 w-3.5 stroke-[2.5]" />
+              <span>Wochenplan in Kalender</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              className="inline-flex items-center gap-1.5 rounded-xl border-2 border-black bg-amber-400 px-2.5 py-1 font-comic text-xs uppercase text-black comic-shadow-sm hover:bg-amber-300 font-bold"
+            >
+              <Settings2 className="h-3.5 w-3.5 stroke-[2.5]" />
+              <span>Anpassen</span>
+            </button>
+          </div>
         </div>
 
         <div className="mt-3.5 space-y-2.5">
