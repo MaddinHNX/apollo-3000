@@ -1,7 +1,9 @@
 import {
   CalendarDays,
   CheckCircle2,
+  Crown,
   History,
+  Medal,
   Settings2,
   Trophy,
 } from 'lucide-react'
@@ -39,26 +41,48 @@ export function WeekDashboard({
   const memberA = members[0]
   const memberB = members[1]
 
+  // Filtere Logs der aktuellen Woche (letzte 7 Tage)
+  const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+
   const getMemberStats = (memberId: string) => {
-    const logs = state.activityLog.filter((log) => log.completedBy === memberId)
-    const totalXP = logs.reduce((sum, item) => sum + item.xpPoints, 0)
+    const allLogs = state.activityLog.filter((log) => log.completedBy === memberId)
+    const weekLogs = allLogs.filter(
+      (log) => new Date(log.timestamp).getTime() >= oneWeekAgo
+    )
+
+    const totalXP = allLogs.reduce((sum, item) => sum + item.xpPoints, 0)
+    const weekXP = weekLogs.reduce((sum, item) => sum + item.xpPoints, 0)
     const assignedChores = state.chores.filter(
       (c) => c.assignedTo === memberId
     )
+
     return {
-      completedCount: logs.length,
+      allCompletedCount: allLogs.length,
+      weekCompletedCount: weekLogs.length,
       totalXP,
+      weekXP,
       assignedChoresCount: assignedChores.length,
     }
   }
 
   const statsA = getMemberStats(memberA?.id || 'member-a')
   const statsB = getMemberStats(memberB?.id || 'member-b')
-  const totalCompleted = state.activityLog.length
+  const totalCompletedWeek = statsA.weekCompletedCount + statsB.weekCompletedCount
+
+  // Wöchentlicher Sieger Ermittlung
+  const hasWinner = statsA.weekXP !== statsB.weekXP
+  const winnerMember = statsA.weekXP > statsB.weekXP ? memberA : memberB
+  const winnerStats = statsA.weekXP > statsB.weekXP ? statsA : statsB
+
+  // Rangliste nach Gesamten Punkten
+  const leaderboard = [
+    { member: memberA, stats: statsA },
+    { member: memberB, stats: statsB },
+  ].sort((a, b) => b.stats.totalXP - a.stats.totalXP)
 
   return (
     <div className="space-y-4">
-      {/* 1. Header Scoreboard */}
+      {/* 1. Header & Wöchentlicher Sieger Banner */}
       <div className="relative overflow-hidden rounded-3xl border-3 border-black bg-white p-4 comic-shadow">
         <div className="flex items-center justify-between">
           <div>
@@ -66,7 +90,7 @@ export function WeekDashboard({
               ★ WOCHEN-DASHBOARD &amp; SCOREBOARD ★
             </span>
             <h2 className="font-comic text-2xl uppercase tracking-wide text-slate-900 leading-tight">
-              Wer hat was gerockt?
+              Wer hat was geputzt?
             </h2>
             <p className="text-xs font-medium text-slate-600">
               Transparenz &amp; Fairness auf einen Blick
@@ -77,14 +101,44 @@ export function WeekDashboard({
           </div>
         </div>
 
-        {/* Head-to-Head Cards */}
-        <div className="mt-4 grid grid-cols-2 gap-3">
+        {/* Wöchentlicher Sieger Box */}
+        <div className="mt-3.5 rounded-2xl border-2 border-black bg-gradient-to-r from-amber-200 via-amber-300 to-amber-200 p-3 comic-shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-black bg-amber-400 text-black font-bold">
+                <Crown className="h-5 w-5 fill-amber-500 stroke-[2.5]" />
+              </div>
+              <div>
+                <span className="font-comic text-[11px] uppercase tracking-wider text-amber-900">
+                  Wöchentlicher Sieger
+                </span>
+                <div className="font-comic text-lg uppercase text-slate-900 leading-none">
+                  {hasWinner ? (
+                    <span>
+                      {winnerMember?.avatar} {winnerMember?.name} liegt vorne!
+                    </span>
+                  ) : (
+                    <span>Gleichstand – Kopf an Kopf!</span>
+                  )}
+                </div>
+              </div>
+            </div>
+            {hasWinner && (
+              <span className="rounded-xl border border-black bg-black px-2 py-1 font-comic text-xs font-bold text-amber-300">
+                +{winnerStats.weekXP} XP diese Woche
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Head-to-Head Cards (Diese Woche) */}
+        <div className="mt-3 grid grid-cols-2 gap-3">
           {/* Person A */}
           <div className="rounded-2xl border-2 border-black bg-amber-50 p-3 comic-shadow-sm">
             <div className="flex items-center justify-between">
               <span className="text-2xl">{memberA?.avatar}</span>
               <span className="rounded-md border border-black bg-amber-400 px-1.5 py-0.5 font-comic text-xs font-bold text-black">
-                {statsA.totalXP} XP
+                {statsA.weekXP} XP (Woche)
               </span>
             </div>
             <div className="mt-1 font-comic text-lg uppercase text-slate-900">
@@ -92,9 +146,9 @@ export function WeekDashboard({
             </div>
             <div className="mt-2 space-y-0.5 text-xs text-slate-600">
               <div className="flex justify-between">
-                <span>Erledigt:</span>
-                <strong className="text-amber-700 font-comic text-sm">
-                  {statsA.completedCount}
+                <span>Geputzt (Woche):</span>
+                <strong className="text-amber-800 font-comic text-sm">
+                  {statsA.weekCompletedCount}x
                 </strong>
               </div>
               <div className="flex justify-between">
@@ -111,7 +165,7 @@ export function WeekDashboard({
             <div className="flex items-center justify-between">
               <span className="text-2xl">{memberB?.avatar}</span>
               <span className="rounded-md border border-black bg-rose-500 px-1.5 py-0.5 font-comic text-xs font-bold text-white">
-                {statsB.totalXP} XP
+                {statsB.weekXP} XP (Woche)
               </span>
             </div>
             <div className="mt-1 font-comic text-lg uppercase text-slate-900">
@@ -119,9 +173,9 @@ export function WeekDashboard({
             </div>
             <div className="mt-2 space-y-0.5 text-xs text-slate-600">
               <div className="flex justify-between">
-                <span>Erledigt:</span>
+                <span>Geputzt (Woche):</span>
                 <strong className="text-rose-600 font-comic text-sm">
-                  {statsB.completedCount}
+                  {statsB.weekCompletedCount}x
                 </strong>
               </div>
               <div className="flex justify-between">
@@ -137,18 +191,18 @@ export function WeekDashboard({
         {/* Fairness Bar */}
         <div className="mt-3.5">
           <div className="flex justify-between text-[11px] font-comic uppercase text-slate-700">
-            <span>{memberA?.name} ({statsA.completedCount})</span>
-            <span>Fairness-Balance</span>
-            <span>{memberB?.name} ({statsB.completedCount})</span>
+            <span>{memberA?.name} ({statsA.weekCompletedCount})</span>
+            <span>Wochen-Verhältnis</span>
+            <span>{memberB?.name} ({statsB.weekCompletedCount})</span>
           </div>
           <div className="mt-1 flex h-3.5 w-full overflow-hidden rounded-full border-2 border-black bg-slate-100">
             <div
               className="bg-amber-400 transition-all duration-300"
               style={{
                 width: `${
-                  totalCompleted === 0
+                  totalCompletedWeek === 0
                     ? 50
-                    : Math.round((statsA.completedCount / totalCompleted) * 100)
+                    : Math.round((statsA.weekCompletedCount / totalCompletedWeek) * 100)
                 }%`,
               }}
             />
@@ -156,9 +210,9 @@ export function WeekDashboard({
               className="bg-rose-500 transition-all duration-300"
               style={{
                 width: `${
-                  totalCompleted === 0
+                  totalCompletedWeek === 0
                     ? 50
-                    : Math.round((statsB.completedCount / totalCompleted) * 100)
+                    : Math.round((statsB.weekCompletedCount / totalCompletedWeek) * 100)
                 }%`,
               }}
             />
@@ -166,7 +220,62 @@ export function WeekDashboard({
         </div>
       </div>
 
-      {/* 2. Tasks der Woche */}
+      {/* 2. Gesamte Rangliste (Allzeit-Punkte) */}
+      <section className="rounded-3xl border-3 border-black bg-white p-4 comic-shadow">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Medal className="h-5 w-5 text-amber-600 stroke-[2.5]" />
+            <h3 className="font-comic text-xl uppercase tracking-wide text-slate-900">
+              Gesamt-Rangliste (Allzeit)
+            </h3>
+          </div>
+          <span className="font-comic text-xs uppercase text-slate-500">
+            Gesamt-XP
+          </span>
+        </div>
+
+        <div className="mt-3 space-y-2">
+          {leaderboard.map((item, index) => {
+            const isFirst = index === 0
+            return (
+              <div
+                key={item.member?.id || index}
+                className={`flex items-center justify-between gap-3 rounded-2xl border-2 border-black p-3 comic-shadow-sm ${
+                  isFirst ? 'bg-amber-100/80' : 'bg-slate-50'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <div
+                    className={`flex h-8 w-8 items-center justify-center rounded-xl border border-black font-comic text-sm font-bold ${
+                      isFirst ? 'bg-amber-400 text-black' : 'bg-slate-200 text-slate-700'
+                    }`}
+                  >
+                    #{index + 1}
+                  </div>
+                  <span className="text-2xl">{item.member?.avatar}</span>
+                  <div>
+                    <div className="flex items-center gap-1.5 font-comic text-base text-slate-900">
+                      <span>{item.member?.name}</span>
+                      {isFirst && <Crown className="h-4 w-4 fill-amber-500 text-amber-600" />}
+                    </div>
+                    <p className="text-[11px] text-slate-600">
+                      {item.stats.allCompletedCount} Aktionen insgesamt erledigt
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <span className="rounded-xl border border-black bg-black px-2.5 py-1 font-comic text-sm font-bold text-amber-300">
+                    {item.stats.totalXP} XP
+                  </span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* 3. Tasks der Woche */}
       <section className="rounded-3xl border-3 border-black bg-white p-4 comic-shadow">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -245,7 +354,7 @@ export function WeekDashboard({
         </div>
       </section>
 
-      {/* 3. Live-Aktivitäts-Log */}
+      {/* 4. Live-Aktivitäts-Log */}
       <section className="rounded-3xl border-3 border-black bg-white p-4 comic-shadow">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
