@@ -13,6 +13,7 @@ import {
 import {
   type Firestore,
   doc,
+  getDoc,
   getFirestore,
   onSnapshot,
   setDoc,
@@ -84,6 +85,25 @@ export function subscribeToHousehold(
       onUpdate(snapshot.data() as HouseholdState)
     }
   })
+}
+
+/**
+ * Fetch household state once from Firestore
+ */
+export async function fetchHouseholdState(
+  householdId: string
+): Promise<HouseholdState | null> {
+  if (!db) return null
+  try {
+    const householdRef = doc(db, 'households', householdId)
+    const snapshot = await getDoc(householdRef)
+    if (snapshot.exists()) {
+      return snapshot.data() as HouseholdState
+    }
+  } catch (err) {
+    console.error('Fetch household error:', err)
+  }
+  return null
 }
 
 /**

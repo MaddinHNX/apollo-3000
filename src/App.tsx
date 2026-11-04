@@ -20,7 +20,12 @@ import { KitchenTracker } from './components/kitchen/KitchenTracker'
 import { LaundryTracker } from './components/laundry/LaundryTracker'
 import { BottomNav } from './components/layout/BottomNav'
 import { ChoreSettingsModal } from './components/settings/ChoreSettingsModal'
-import { isFirebaseConfigured, subscribeToHousehold, syncHouseholdState } from './config/firebase'
+import {
+  fetchHouseholdState,
+  isFirebaseConfigured,
+  subscribeToHousehold,
+  syncHouseholdState,
+} from './config/firebase'
 import { INITIAL_HOUSEHOLD_STATE } from './data/mockData'
 import type {
   DishwasherStatus,
@@ -73,14 +78,32 @@ export function App() {
     () => new Date().getHours() >= 18
   )
 
-  // Firestore Sync Listener wenn konfiguriert
+  // Firestore Sync Listener & Initial Cloud Sync
   useEffect(() => {
     if (isFirebaseConfigured && state.householdId) {
+      // 1. Einmalig prüfen: Existiert der Haushalt in der Cloud?
+      fetchHouseholdState(state.householdId)
+        .then((remote) => {
+          if (remote && remote.members && remote.members.length > 0) {
+            setState((prev) => ({
+              ...prev,
+              ...remote,
+            }))
+          } else {
+            // Noch nicht in der Cloud: Aktuellen lokalen Stand direkt hochladen!
+            syncHouseholdState(state.householdId, state).catch(console.error)
+          }
+        })
+        .catch(console.error)
+
+      // 2. Echtzeit-Updates abonnieren
       const unsubscribe = subscribeToHousehold(state.householdId, (remoteState) => {
-        setState((prev) => ({
-          ...prev,
-          ...remoteState,
-        }))
+        if (remoteState && remoteState.members) {
+          setState((prev) => ({
+            ...prev,
+            ...remoteState,
+          }))
+        }
       })
       return () => unsubscribe()
     }
@@ -355,10 +378,27 @@ export function App() {
     }))
   }
 
-  const handleUpdateHouseholdId = (newId: string) => {
+  const handleUpdateHouseholdId = async (newId: string) => {
+    const cleanId = newId.trim().toLowerCase()
+    if (!cleanId) return
+
+    // Versuche zuerst den existierenden Haushalt aus Firestore zu laden
+    if (isFirebaseConfigured) {
+      try {
+        const remoteState = await fetchHouseholdState(cleanId)
+        if (remoteState) {
+          setState(remoteState)
+          return
+        }
+      } catch (err) {
+        console.warn('Could not fetch remote household:', err)
+      }
+    }
+
+    // Falls nicht vorhanden, lokalen Haushalt auf diese ID setzen und hochladen
     updateStateAndSync((prev) => ({
       ...prev,
-      householdId: newId,
+      householdId: cleanId,
     }))
   }
 

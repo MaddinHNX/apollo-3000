@@ -39,6 +39,8 @@ export function HouseholdAuthModal({
   const [copied, setCopied] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isJoining, setIsJoining] = useState(false)
+  const [joinSuccess, setJoinSuccess] = useState(false)
 
   // Google Kalender
   const [calendarUrl, setCalendarUrl] = useState(householdState.googleCalendarUrl || '')
@@ -58,11 +60,22 @@ export function HouseholdAuthModal({
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const handleJoinHousehold = (e: React.FormEvent) => {
+  const handleJoinHousehold = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!inputHouseholdCode.trim()) return
-    onUpdateHouseholdId(inputHouseholdCode.trim().toLowerCase())
-    onClose()
+    const code = inputHouseholdCode.trim().toLowerCase()
+    if (!code) return
+    setIsJoining(true)
+    try {
+      await onUpdateHouseholdId(code)
+      setJoinSuccess(true)
+      setTimeout(() => {
+        setJoinSuccess(false)
+        setIsJoining(false)
+        onClose()
+      }, 800)
+    } catch {
+      setIsJoining(false)
+    }
   }
 
   const handleGoogleSignIn = async () => {
@@ -280,14 +293,26 @@ export function HouseholdAuthModal({
               placeholder="Anderen Code eingeben..."
               value={inputHouseholdCode}
               onChange={(e) => setInputHouseholdCode(e.target.value)}
-              className="min-w-0 flex-1 rounded-xl border-2 border-black bg-white px-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="min-w-0 flex-1 rounded-xl border-2 border-black bg-white px-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-mono"
             />
             <button
               type="submit"
-              className="inline-flex shrink-0 items-center gap-1 rounded-xl border-2 border-black bg-emerald-400 px-3 py-1.5 font-comic text-xs uppercase text-black comic-shadow-sm active:translate-y-0.5 font-bold"
+              disabled={isJoining}
+              className="inline-flex shrink-0 items-center gap-1 rounded-xl border-2 border-black bg-emerald-400 px-3 py-1.5 font-comic text-xs uppercase text-black comic-shadow-sm active:translate-y-0.5 font-bold hover:bg-emerald-300"
             >
-              <DoorOpen className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span>Wechseln</span>
+              {joinSuccess ? (
+                <>
+                  <Check className="h-3.5 w-3.5 stroke-[3]" />
+                  <span>Verbunden!</span>
+                </>
+              ) : isJoining ? (
+                <span>Lade...</span>
+              ) : (
+                <>
+                  <DoorOpen className="h-3.5 w-3.5 stroke-[2.5]" />
+                  <span>Wechseln</span>
+                </>
+              )}
             </button>
           </form>
         </div>
