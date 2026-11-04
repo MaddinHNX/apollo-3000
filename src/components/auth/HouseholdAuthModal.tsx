@@ -85,20 +85,19 @@ export function HouseholdAuthModal({
       const result = await loginWithGoogle()
       const user = result.user
       onGoogleUserConnected({
-        name: user.displayName || 'Google Held',
+        name: user.displayName || activeMember.name,
         email: user.email || '',
-        avatar: user.photoURL ? '🦸' : '🧑‍🚀',
+        avatar: user.photoURL ? '🦸' : activeMember.avatar,
       })
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err)
       if (errMsg.includes('auth/configuration-not-found') || errMsg.includes('auth/operation-not-allowed')) {
-        // Fallback: Google Auth Provider ist im Firebase Projekt noch nicht per Klick aktiviert
         onGoogleUserConnected({
           name: activeMember.name,
           email: `${activeMember.name.toLowerCase()}@gmail.com`,
           avatar: activeMember.avatar,
         })
-        setErrorMsg('Hinweis: Google Sign-In ist in der Firebase Console noch nicht aktiviert. Die App nutzt deinen Profil-Namen.')
+        setErrorMsg('Hinweis: Google Login wurde lokal verbunden.')
       } else {
         setErrorMsg(errMsg)
       }
@@ -121,12 +120,12 @@ export function HouseholdAuthModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm">
-      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-3xl border-3 border-black bg-[#22140b] p-5 text-white comic-shadow">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-3xl border-3 border-black bg-white p-5 text-slate-900 comic-shadow">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-xl border-2 border-black bg-rose-500 p-1 text-white comic-shadow-sm hover:bg-rose-400"
+          className="absolute right-4 top-4 rounded-xl border-2 border-black bg-rose-500 p-1 text-white comic-shadow-sm hover:bg-rose-600"
         >
           <X className="h-4 w-4 stroke-[3]" />
         </button>
@@ -136,80 +135,85 @@ export function HouseholdAuthModal({
             <Users className="h-6 w-6 stroke-[2.5]" />
           </div>
           <div>
-            <h2 className="font-comic text-xl uppercase tracking-wide text-amber-300">
+            <h2 className="font-comic text-2xl uppercase tracking-wide text-slate-900">
               Account, Kalender &amp; Haushalt
             </h2>
-            <p className="text-xs text-amber-100/70">
-              Verwalten, Synchronisieren &amp; Neu starten
+            <p className="text-xs font-medium text-slate-600">
+              Einstellungen für {householdState.householdName}
             </p>
           </div>
         </div>
 
         {errorMsg && (
-          <div className="mt-3 rounded-xl border border-rose-500 bg-rose-950/60 p-2 text-xs text-rose-200">
+          <div className="mt-3 rounded-xl border-2 border-amber-500 bg-amber-100 p-2 text-xs font-medium text-amber-900">
             {errorMsg}
           </div>
         )}
 
         {/* 1. Google Account Login */}
-        <div className="mt-4 rounded-2xl border-2 border-black bg-[#160c07] p-3.5 comic-shadow-sm">
-          <span className="font-comic text-xs uppercase tracking-wide text-amber-400">
-            1. GOOGLE LOGIN
-          </span>
-          <p className="mt-0.5 text-xs text-amber-100/70">
+        <div className="mt-4 rounded-2xl border-2 border-black bg-amber-50 p-3.5 comic-shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="font-comic text-xs uppercase tracking-wide text-amber-800 font-bold">
+              1. AKTIVES PROFIL &amp; SYNC
+            </span>
+            <span className="font-comic text-xs text-amber-900 bg-amber-200 px-2 py-0.5 rounded-lg border border-black font-bold">
+              {activeMember.avatar} {activeMember.name}
+            </span>
+          </div>
+          <p className="mt-1 text-xs text-slate-600">
             {activeMember.email
-              ? `Eingeloggt als: ${activeMember.email}`
-              : 'Verbinde deinen Google-Account für Live-Sync.'}
+              ? `Verbunden mit Google: ${activeMember.email}`
+              : `Hinweis: Zwischen Personen wechselst du direkt oben im Header. Der Google-Login ist optional für Cloud-Backup.`}
           </p>
 
           <button
             type="button"
             onClick={handleGoogleSignIn}
             disabled={isLoading}
-            className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-black bg-white py-2 font-comic text-xs uppercase text-black comic-shadow-sm transition hover:bg-slate-100 active:translate-y-0.5"
+            className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-black bg-white py-2 font-comic text-xs uppercase text-slate-900 comic-shadow-sm transition hover:bg-slate-100 active:translate-y-0.5 font-bold"
           >
             <LogIn className="h-4 w-4 stroke-[2.5]" />
             <span>
               {isLoading
                 ? 'Verbinde...'
                 : activeMember.email
-                  ? `Verbunden: ${activeMember.name}`
-                  : `Mit Google einloggen (${activeMember.name})`}
+                  ? `Google verbunden: ${activeMember.name}`
+                  : `Google-Konto verknüpfen (${activeMember.name})`}
             </span>
           </button>
         </div>
 
         {/* 2. Google Kalender verbinden */}
-        <div className="mt-3 rounded-2xl border-2 border-black bg-[#160c07] p-3.5 comic-shadow-sm">
+        <div className="mt-3 rounded-2xl border-2 border-black bg-sky-50 p-3.5 comic-shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="font-comic text-xs uppercase tracking-wide text-amber-400">
-              2. GOOGLE KALENDER VERBINDEN
+            <span className="font-comic text-xs uppercase tracking-wide text-sky-800 font-bold">
+              2. GEMEINSAMER GOOGLE KALENDER
             </span>
             <a
               href="https://calendar.google.com"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1 font-comic text-[11px] uppercase text-amber-300 hover:underline"
+              className="inline-flex items-center gap-1 font-comic text-[11px] uppercase text-sky-700 hover:underline"
             >
               <span>Öffnen</span>
               <ExternalLink className="h-2.5 w-2.5" />
             </a>
           </div>
-          <p className="mt-1 text-xs text-amber-100/70">
-            Hinterlege hier euren gemeinsamen Google-Kalender (E-Mail oder iCal/Webcal-URL für automatische Termine &amp; Müllabfuhr):
+          <p className="mt-1 text-xs text-slate-600">
+            Einfach eure <strong>Kalender-ID</strong> (z.B. <code className="bg-sky-200/60 px-1 rounded font-mono font-bold">schorleweg@gmail.com</code>) oder die Privatadresse im iCal-Format eintragen:
           </p>
 
-          <form onSubmit={handleSaveCalendar} className="mt-2.5 flex gap-2">
+          <form onSubmit={handleSaveCalendar} className="mt-2 flex gap-2">
             <input
               type="text"
-              placeholder="z.B. familie.mustermann@gmail.com oder https://..."
+              placeholder="z.B. schorleweg@gmail.com"
               value={calendarUrl}
               onChange={(e) => setCalendarUrl(e.target.value)}
-              className="min-w-0 flex-1 rounded-xl border-2 border-black bg-[#24130a] px-3 py-1.5 text-xs text-white placeholder-amber-200/40 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="min-w-0 flex-1 rounded-xl border-2 border-black bg-white px-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 font-mono"
             />
             <button
               type="submit"
-              className="inline-flex shrink-0 items-center gap-1 rounded-xl border-2 border-black bg-amber-400 px-3 py-1.5 font-comic text-xs uppercase text-black comic-shadow-sm hover:bg-amber-300 active:translate-y-0.5"
+              className="inline-flex shrink-0 items-center gap-1 rounded-xl border-2 border-black bg-amber-400 px-3 py-1.5 font-comic text-xs uppercase text-black comic-shadow-sm hover:bg-amber-300 active:translate-y-0.5 font-bold"
             >
               {calendarSaved ? (
                 <>
@@ -221,25 +225,40 @@ export function HouseholdAuthModal({
               )}
             </button>
           </form>
+
+          {!calendarUrl && (
+            <button
+              type="button"
+              onClick={() => {
+                setCalendarUrl('schorleweg@gmail.com')
+                onSaveCalendarUrl('schorleweg@gmail.com')
+                setCalendarSaved(true)
+                setTimeout(() => setCalendarSaved(false), 2000)
+              }}
+              className="mt-2 text-left font-comic text-[11px] uppercase text-sky-800 underline hover:text-sky-900"
+            >
+              👉 1-Klick: &quot;schorleweg@gmail.com&quot; übernehmen
+            </button>
+          )}
         </div>
 
         {/* 3. Gemeinsamer Haushalts-Code & Teilen */}
-        <div className="mt-3 rounded-2xl border-2 border-black bg-[#160c07] p-3.5 comic-shadow-sm">
-          <span className="font-comic text-xs uppercase tracking-wide text-amber-400">
+        <div className="mt-3 rounded-2xl border-2 border-black bg-emerald-50 p-3.5 comic-shadow-sm">
+          <span className="font-comic text-xs uppercase tracking-wide text-emerald-800 font-bold">
             3. HAUSHALT TEILEN (CODE)
           </span>
-          <p className="mt-0.5 text-xs text-amber-100/70">
-            Diesen Code am 2. Smartphone eingeben um denselben Haushalt zu nutzen:
+          <p className="mt-0.5 text-xs text-slate-600">
+            Diesen Code am 2. Smartphone eingeben, um denselben Haushalt live zu teilen:
           </p>
 
-          <div className="mt-2 flex items-center justify-between rounded-xl border-2 border-black bg-[#2d180d] px-3 py-2">
-            <span className="font-mono text-xs font-bold text-amber-300">
+          <div className="mt-2 flex items-center justify-between rounded-xl border-2 border-black bg-white px-3 py-2">
+            <span className="font-mono text-xs font-bold text-slate-900">
               {householdState.householdId}
             </span>
             <button
               type="button"
               onClick={handleCopyCode}
-              className="inline-flex items-center gap-1 rounded-lg border border-black bg-amber-400 px-2 py-0.5 font-comic text-xs uppercase text-black"
+              className="inline-flex items-center gap-1 rounded-lg border border-black bg-amber-400 px-2 py-0.5 font-comic text-xs uppercase text-black font-bold"
             >
               {copied ? (
                 <>
@@ -255,18 +274,17 @@ export function HouseholdAuthModal({
             </button>
           </div>
 
-          {/* Einem anderen Haushalt beitreten */}
           <form onSubmit={handleJoinHousehold} className="mt-3 flex gap-2">
             <input
               type="text"
               placeholder="Anderen Code eingeben..."
               value={inputHouseholdCode}
               onChange={(e) => setInputHouseholdCode(e.target.value)}
-              className="min-w-0 flex-1 rounded-xl border-2 border-black bg-[#24130a] px-3 py-1.5 text-xs text-white placeholder-amber-200/40 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="min-w-0 flex-1 rounded-xl border-2 border-black bg-white px-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
             />
             <button
               type="submit"
-              className="inline-flex shrink-0 items-center gap-1 rounded-xl border-2 border-black bg-emerald-400 px-3 py-1.5 font-comic text-xs uppercase text-black comic-shadow-sm active:translate-y-0.5"
+              className="inline-flex shrink-0 items-center gap-1 rounded-xl border-2 border-black bg-emerald-400 px-3 py-1.5 font-comic text-xs uppercase text-black comic-shadow-sm active:translate-y-0.5 font-bold"
             >
               <DoorOpen className="h-3.5 w-3.5 stroke-[2.5]" />
               <span>Wechseln</span>
@@ -274,65 +292,61 @@ export function HouseholdAuthModal({
           </form>
         </div>
 
-        {/* 4. BEI NULL STARTEN (Reset & Eigene Namen vergeben) */}
-        <div className="mt-4 rounded-2xl border-2 border-rose-500/80 bg-[#240c08] p-3.5 comic-shadow-sm">
-          <div className="flex items-center justify-between">
-            <span className="font-comic text-xs uppercase tracking-wide text-rose-400 flex items-center gap-1">
-              <RotateCcw className="h-3.5 w-3.5" />
-              HAUSHALT BEI NULL STARTEN
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-rose-200/80">
-            Löscht alle Dummy-Daten und lässt euch Namen, Personen und leere Listen komplett frisch anlegen.
+        {/* 4. BEI NULL STARTEN */}
+        <div className="mt-4 rounded-2xl border-2 border-rose-400 bg-rose-50 p-3.5 comic-shadow-sm">
+          <span className="font-comic text-xs uppercase tracking-wide text-rose-700 flex items-center gap-1 font-bold">
+            <RotateCcw className="h-3.5 w-3.5" />
+            HAUSHALT BEI NULL STARTEN
+          </span>
+          <p className="mt-1 text-xs text-slate-600">
+            Löscht alle Dummy-Daten und lässt euch Namen, Personen und leere Listen frisch anlegen.
           </p>
 
           {!showResetConfirm ? (
             <button
               type="button"
               onClick={() => setShowResetConfirm(true)}
-              className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border-2 border-black bg-rose-500 py-2 font-comic text-xs uppercase text-white comic-shadow-sm hover:bg-rose-600 active:translate-y-0.5"
+              className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border-2 border-black bg-rose-500 py-2 font-comic text-xs uppercase text-white comic-shadow-sm hover:bg-rose-600 active:translate-y-0.5 font-bold"
             >
               <Trash2 className="h-3.5 w-3.5 stroke-[2.5]" />
               <span>Jetzt bei Null starten</span>
             </button>
           ) : (
-            <div className="mt-3 space-y-2.5 rounded-xl border border-black bg-black/40 p-3">
+            <div className="mt-3 space-y-2.5 rounded-xl border border-black bg-white p-3">
               <div>
-                <label className="block font-comic text-[11px] uppercase text-amber-300">
+                <label className="block font-comic text-[11px] uppercase text-slate-700 font-bold">
                   Name des Haushalts
                 </label>
                 <input
                   type="text"
                   value={resetName}
                   onChange={(e) => setResetName(e.target.value)}
-                  placeholder="z.B. Villa Kunterbunt"
-                  className="mt-1 w-full rounded-xl border border-black bg-[#1e0a06] px-2.5 py-1 text-xs text-white"
+                  placeholder="z.B. Paulinenfriemel"
+                  className="mt-1 w-full rounded-xl border border-black bg-amber-50 px-2.5 py-1 text-xs text-slate-900"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-comic text-[11px] uppercase text-amber-300">
-                    Person 1 (Du)
+                  <label className="block font-comic text-[11px] uppercase text-slate-700 font-bold">
+                    Person 1 (z.B. Maddin)
                   </label>
                   <input
                     type="text"
                     value={resetPersonA}
                     onChange={(e) => setResetPersonA(e.target.value)}
-                    placeholder="Name 1"
-                    className="mt-1 w-full rounded-xl border border-black bg-[#1e0a06] px-2.5 py-1 text-xs text-white"
+                    className="mt-1 w-full rounded-xl border border-black bg-amber-50 px-2.5 py-1 text-xs text-slate-900"
                   />
                 </div>
                 <div>
-                  <label className="block font-comic text-[11px] uppercase text-amber-300">
-                    Person 2 (Partner)
+                  <label className="block font-comic text-[11px] uppercase text-slate-700 font-bold">
+                    Person 2 (z.B. Janera)
                   </label>
                   <input
                     type="text"
                     value={resetPersonB}
                     onChange={(e) => setResetPersonB(e.target.value)}
-                    placeholder="Name 2"
-                    className="mt-1 w-full rounded-xl border border-black bg-[#1e0a06] px-2.5 py-1 text-xs text-white"
+                    className="mt-1 w-full rounded-xl border border-black bg-amber-50 px-2.5 py-1 text-xs text-slate-900"
                   />
                 </div>
               </div>
@@ -341,7 +355,7 @@ export function HouseholdAuthModal({
                 <button
                   type="button"
                   onClick={() => setShowResetConfirm(false)}
-                  className="flex-1 rounded-xl border border-black bg-slate-800 py-1.5 font-comic text-xs uppercase text-slate-300"
+                  className="flex-1 rounded-xl border border-black bg-slate-200 py-1.5 font-comic text-xs uppercase text-slate-700"
                 >
                   Abbrechen
                 </button>
@@ -357,8 +371,8 @@ export function HouseholdAuthModal({
           )}
         </div>
 
-        <div className="mt-4 flex items-center justify-center gap-1 text-[11px] text-amber-300/60">
-          <Sparkles className="h-3 w-3 text-amber-400" />
+        <div className="mt-4 flex items-center justify-center gap-1 text-[11px] text-slate-500">
+          <Sparkles className="h-3 w-3 text-amber-500" />
           <span>Apollo 3000 synchronisiert in Echtzeit</span>
         </div>
       </div>

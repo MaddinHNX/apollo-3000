@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import {
   Calendar,
   Check,
-  LogIn,
   RefreshCcw,
+  Settings,
   Sparkles,
 } from 'lucide-react'
 import maidIcon from './assets/icon-maid.jpg'
@@ -567,14 +567,15 @@ export function App() {
                 </div>
               </div>
 
-              {/* Einloggen-Button */}
+              {/* Haushalt, Kalender & Sync Einstellungen */}
               <button
                 type="button"
                 onClick={() => setIsAuthModalOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-xl border-2 border-black bg-rose-500 px-3 py-1.5 font-comic text-xs uppercase text-white comic-shadow-sm transition hover:bg-rose-600 active:translate-y-0.5 font-bold"
+                className="inline-flex items-center gap-1.5 rounded-xl border-2 border-black bg-amber-400 px-3 py-1.5 font-comic text-xs uppercase text-black comic-shadow-sm transition hover:bg-amber-300 active:translate-y-0.5 font-bold"
+                title="Haushalt, Google Kalender & Synchronisation verwalten"
               >
-                <LogIn className="h-3.5 w-3.5 stroke-[2.5]" />
-                <span>Einloggen</span>
+                <Settings className="h-3.5 w-3.5 stroke-[2.5]" />
+                <span>Haushalt</span>
               </button>
             </div>
 

@@ -58,13 +58,13 @@ export function PersonDetailModal({
   const totalXP = memberLogs.reduce((sum, item) => sum + item.xpPoints, 0)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm">
-      <div className="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl border-3 border-black bg-[#23140a] p-5 text-white comic-shadow">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+      <div className="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl border-3 border-black bg-white p-5 text-slate-900 comic-shadow">
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-xl border-2 border-black bg-rose-500 p-1 text-white comic-shadow-sm hover:bg-rose-400"
+          className="absolute right-4 top-4 rounded-xl border-2 border-black bg-rose-500 p-1 text-white comic-shadow-sm hover:bg-rose-600"
         >
           <X className="h-4 w-4 stroke-[3]" />
         </button>
@@ -76,15 +76,15 @@ export function PersonDetailModal({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="font-comic text-2xl uppercase tracking-wide text-amber-300">
+              <h2 className="font-comic text-2xl uppercase tracking-wide text-slate-900">
                 {member.name}
               </h2>
-              <span className="rounded-md border border-black bg-black px-2 py-0.5 font-comic text-xs text-amber-300">
+              <span className="rounded-md border border-black bg-amber-200 px-2 py-0.5 font-comic text-xs text-black font-bold">
                 {member.roleLabel || 'Haushaltsmitglied'}
               </span>
             </div>
-            <div className="flex items-center gap-2 mt-0.5 text-xs text-amber-100/80">
-              <span className="flex items-center gap-1 font-comic text-sm font-bold text-amber-400">
+            <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-600">
+              <span className="flex items-center gap-1 font-comic text-sm font-bold text-amber-600">
                 <Trophy className="h-3.5 w-3.5 stroke-[2.5]" />
                 {totalXP} XP gesammelt
               </span>
@@ -95,15 +95,15 @@ export function PersonDetailModal({
 
         {/* 1. Was steht diese Woche an? (Offene Aufgaben) */}
         <div className="mt-5 space-y-2.5">
-          <div className="flex items-center justify-between border-b border-black/60 pb-1.5">
-            <span className="flex items-center gap-1.5 font-comic text-sm uppercase tracking-wide text-amber-400">
+          <div className="flex items-center justify-between border-b-2 border-slate-200 pb-1.5">
+            <span className="flex items-center gap-1.5 font-comic text-sm uppercase tracking-wide text-amber-700 font-bold">
               <CalendarDays className="h-4 w-4 stroke-[2.5]" />
               Steht diese Woche an ({assignedChores.length}):
             </span>
           </div>
 
           {assignedChores.length === 0 ? (
-            <div className="rounded-2xl border border-black/40 bg-black/20 p-3 text-center text-xs text-amber-200/60">
+            <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-4 text-center text-xs text-slate-500 font-medium">
               🎉 Alles erledigt! Aktuell keine offenen Aufgaben für {member.name}.
             </div>
           ) : (
@@ -112,23 +112,23 @@ export function PersonDetailModal({
               return (
                 <div
                   key={chore.id}
-                  className="flex items-center justify-between gap-2 rounded-2xl border-2 border-black bg-[#160b06] p-3 comic-shadow-sm"
+                  className="flex items-center justify-between gap-2 rounded-2xl border-2 border-black bg-amber-50/70 p-3 comic-shadow-sm"
                 >
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-comic text-base text-white">
+                      <span className="font-comic text-base text-slate-900 font-bold">
                         {chore.title}
                       </span>
                       <span className="rounded-md border border-black bg-amber-400 px-1.5 py-0.2 font-comic text-xs font-bold text-black">
                         +{chore.xpReward || 30} XP
                       </span>
                     </div>
-                    <div className="mt-0.5 flex items-center gap-2 text-xs text-amber-100/70">
+                    <div className="mt-0.5 flex items-center gap-2 text-xs text-slate-600">
                       <span
                         className={`font-semibold ${
                           due.daysRemaining <= 0
-                            ? 'text-rose-400'
-                            : 'text-amber-300'
+                            ? 'text-rose-600'
+                            : 'text-amber-700'
                         }`}
                       >
                         {due.statusText}
@@ -142,7 +142,7 @@ export function PersonDetailModal({
                     onClick={() => {
                       onCompleteChore(chore.id)
                     }}
-                    className="inline-flex shrink-0 items-center gap-1 rounded-xl border-2 border-black bg-emerald-400 px-2.5 py-1.5 font-comic text-xs uppercase text-black comic-shadow-sm hover:bg-emerald-300 active:translate-y-0.5"
+                    className="inline-flex shrink-0 items-center gap-1 rounded-xl border-2 border-black bg-emerald-400 px-2.5 py-1.5 font-comic text-xs uppercase text-black font-bold comic-shadow-sm hover:bg-emerald-300 active:translate-y-0.5"
                   >
                     <CheckCircle2 className="h-3.5 w-3.5 stroke-[2.5]" />
                     <span>Erledigt!</span>
@@ -155,16 +155,16 @@ export function PersonDetailModal({
           {/* Aktive Wäsche-Sorten für dieses Mitglied */}
           {assignedLaundry.length > 0 && (
             <div className="mt-2 space-y-1.5">
-              <span className="font-comic text-xs uppercase text-amber-300/80">
+              <span className="font-comic text-xs uppercase text-slate-700 font-bold">
                 Laufende Wäsche:
               </span>
               {assignedLaundry.map((l) => (
                 <div
                   key={l.id}
-                  className="flex items-center justify-between rounded-xl border border-black bg-[#160b06] px-3 py-1.5 text-xs text-amber-200"
+                  className="flex items-center justify-between rounded-xl border-2 border-black bg-sky-50 px-3 py-1.5 text-xs text-slate-800"
                 >
-                  <span>{l.label} ({l.temperature})</span>
-                  <span className="font-comic text-amber-400 uppercase">
+                  <span className="font-medium">{l.label} ({l.temperature})</span>
+                  <span className="font-comic text-sky-800 uppercase font-bold">
                     Stage: {l.stage}
                   </span>
                 </div>
@@ -175,15 +175,15 @@ export function PersonDetailModal({
 
         {/* 2. Was wurde schon erledigt? (Historie) */}
         <div className="mt-5 space-y-2.5">
-          <div className="flex items-center justify-between border-b border-black/60 pb-1.5">
-            <span className="flex items-center gap-1.5 font-comic text-sm uppercase tracking-wide text-amber-400">
+          <div className="flex items-center justify-between border-b-2 border-slate-200 pb-1.5">
+            <span className="flex items-center gap-1.5 font-comic text-sm uppercase tracking-wide text-slate-800 font-bold">
               <History className="h-4 w-4 stroke-[2.5]" />
               Schon erledigt ({memberLogs.length}):
             </span>
           </div>
 
           {memberLogs.length === 0 ? (
-            <div className="rounded-2xl border border-black/40 bg-black/20 p-3 text-center text-xs text-amber-200/60">
+            <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-4 text-center text-xs text-slate-500 font-medium">
               Noch keine Aktivitäten in dieser Woche erfasst.
             </div>
           ) : (
@@ -191,17 +191,17 @@ export function PersonDetailModal({
               {memberLogs.map((log) => (
                 <div
                   key={log.id}
-                  className="flex items-center justify-between rounded-xl border border-black bg-[#160b06] px-3 py-2 text-xs comic-shadow-sm"
+                  className="flex items-center justify-between rounded-xl border-2 border-black bg-white px-3 py-2 text-xs comic-shadow-sm"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="font-comic text-sm text-white">
+                    <span className="font-comic text-sm text-slate-900 font-bold">
                       {log.title}
                     </span>
-                    <span className="rounded border border-black bg-emerald-400 px-1 font-comic text-[10px] text-black">
+                    <span className="rounded border border-black bg-emerald-400 px-1 font-comic text-[10px] text-black font-bold">
                       +{log.xpPoints} XP
                     </span>
                   </div>
-                  <span className="font-comic text-[11px] text-amber-200/60">
+                  <span className="font-comic text-[11px] text-slate-500">
                     {formatRelativeTime(log.timestamp)}
                   </span>
                 </div>
@@ -210,8 +210,8 @@ export function PersonDetailModal({
           )}
         </div>
 
-        <div className="mt-4 flex items-center justify-center gap-1 text-[11px] text-amber-300/60">
-          <Sparkles className="h-3 w-3 text-amber-400" />
+        <div className="mt-4 flex items-center justify-center gap-1 text-[11px] text-slate-500">
+          <Sparkles className="h-3 w-3 text-amber-500" />
           <span>Tipp: Erledigte Aufgaben rotieren sofort zum Partner</span>
         </div>
       </div>
