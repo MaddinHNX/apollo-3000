@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import {
   ArrowRightLeft,
+  CalendarPlus,
   CheckCircle2,
   Circle,
   Clock,
+  ExternalLink,
   Sparkles,
 } from 'lucide-react'
+import { GoogleCalendarService } from '../../services/googleCalendar'
 import type { HouseholdMember, StandardChore } from '../../types/household'
 
 interface TodayChoresListProps {
@@ -64,6 +67,13 @@ export function TodayChoresList({
     return getChoreDueInfo(a).daysRemaining - getChoreDueInfo(b).daysRemaining
   })
 
+  const handleOpenGoogleCalendar = (chore: StandardChore) => {
+    const assignee = members.find((m) => m.id === chore.assignedTo)
+    const assigneeName = assignee ? assignee.name : 'Haushalt'
+    const intentUrl = GoogleCalendarService.createWebIntentUrl(chore, assigneeName)
+    window.open(intentUrl, '_blank', 'noopener,noreferrer')
+  }
+
   return (
     <section
       aria-label="Heutige Aufgaben"
@@ -75,7 +85,7 @@ export function TodayChoresList({
             Aufgaben & Rotation
           </h2>
           <p className="text-xs text-slate-400">
-            Antippen oder nach rechts wischen zum Abhaken (rotiert A ↔ B)
+            Antippen/Wischen zum Abhaken · 1-Tap Google Kalender Export
           </p>
         </div>
         <span className="inline-flex items-center gap-1 rounded-full bg-indigo-500/15 px-2.5 py-1 text-[11px] font-semibold text-indigo-300">
@@ -147,25 +157,39 @@ export function TodayChoresList({
                 </button>
 
                 <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-sm font-semibold text-slate-100">
-                      {chore.title}
-                    </h3>
-                    <span
-                      className={`rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${
-                        due.daysRemaining < 0
-                          ? 'bg-rose-500/20 text-rose-300'
-                          : due.daysRemaining === 0
-                            ? 'bg-amber-500/20 text-amber-300'
-                            : 'bg-slate-800 text-slate-400'
-                      }`}
+                  <div className="flex flex-wrap items-center justify-between gap-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-sm font-semibold text-slate-100">
+                        {chore.title}
+                      </h3>
+                      <span
+                        className={`rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${
+                          due.daysRemaining < 0
+                            ? 'bg-rose-500/20 text-rose-300'
+                            : due.daysRemaining === 0
+                              ? 'bg-amber-500/20 text-amber-300'
+                              : 'bg-slate-800 text-slate-400'
+                        }`}
+                      >
+                        {due.statusText}
+                      </span>
+                    </div>
+
+                    {/* Google Calendar Direct Export Button */}
+                    <button
+                      type="button"
+                      title="Als Google Kalender Termin anlegen"
+                      onClick={() => handleOpenGoogleCalendar(chore)}
+                      className="inline-flex items-center gap-1 rounded-lg border border-slate-700/80 bg-slate-800/80 px-2 py-1 text-[11px] font-medium text-slate-300 transition hover:border-indigo-500/50 hover:bg-slate-700 hover:text-indigo-200 active:scale-95"
                     >
-                      {due.statusText}
-                    </span>
+                      <CalendarPlus className="h-3 w-3 text-indigo-400" />
+                      <span>In Kalender</span>
+                      <ExternalLink className="h-2.5 w-2.5 text-slate-500" />
+                    </button>
                   </div>
 
                   {chore.description && (
-                    <p className="mt-0.5 text-xs text-slate-400">
+                    <p className="mt-1 text-xs text-slate-400">
                       {chore.description}
                     </p>
                   )}
@@ -205,7 +229,7 @@ export function TodayChoresList({
 
       <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
         <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
-        <span>Nach Erledigung wechselt die Zuständigkeit automatisch</span>
+        <span>Tipp: &quot;In Kalender&quot; öffnet direkt die Google Kalender Vorlage</span>
       </div>
     </section>
   )
