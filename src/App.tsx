@@ -16,6 +16,7 @@ import {
 } from './components/dashboard/TodayChoresList'
 import { WasteAlertBanner } from './components/dashboard/WasteAlertBanner'
 import { WeekDashboard } from './components/dashboard/WeekDashboard'
+import { KitchenTracker } from './components/kitchen/KitchenTracker'
 import { LaundryTracker } from './components/laundry/LaundryTracker'
 import { BottomNav } from './components/layout/BottomNav'
 import { ChoreSettingsModal } from './components/settings/ChoreSettingsModal'
@@ -25,6 +26,7 @@ import type {
   DishwasherStatus,
   HouseholdMember,
   HouseholdState,
+  KitchenChore,
   LaundryStage,
   LaundryType,
   NavigationTab,
@@ -282,6 +284,55 @@ export function App() {
     })
   }
 
+  // Küchen-Todo erledigen
+  const handleCompleteKitchenChore = (choreId: string) => {
+    const todayStr = new Date().toISOString().split('T')[0]
+    updateStateAndSync((prev) => {
+      const chore = (prev.kitchenChores || []).find((c) => c.id === choreId)
+      const earnedXP = chore?.xpReward || 20
+      const newLogs: TaskActivityLog[] = chore
+        ? [
+            {
+              id: `log-${Date.now()}`,
+              title: chore.title,
+              category: 'kitchen',
+              completedBy: prev.activeMemberId,
+              completedByName: activeMember.name,
+              completedByAvatar: activeMember.avatar,
+              timestamp: new Date().toISOString(),
+              xpPoints: earnedXP,
+            },
+            ...prev.activityLog,
+          ]
+        : prev.activityLog
+
+      return {
+        ...prev,
+        kitchenChores: (prev.kitchenChores || []).map((c) => {
+          if (c.id !== choreId) return c
+          const nextPerson =
+            c.rotationOrder[0] === c.assignedTo
+              ? c.rotationOrder[1]
+              : c.rotationOrder[0]
+          return {
+            ...c,
+            lastCompletedAt: todayStr,
+            assignedTo: nextPerson,
+          }
+        }),
+        activityLog: newLogs.slice(0, 30),
+      }
+    })
+  }
+
+  // Neues Küchen-Todo hinzufügen
+  const handleAddKitchenChore = (chore: KitchenChore) => {
+    updateStateAndSync((prev) => ({
+      ...prev,
+      kitchenChores: [...(prev.kitchenChores || []), chore],
+    }))
+  }
+
   // Save / Update Chore
   const handleSaveChore = (choreToSave: StandardChore) => {
     updateStateAndSync((prev) => {
@@ -371,6 +422,7 @@ export function App() {
         updatedAt: new Date().toISOString(),
         xpReward: 15,
       },
+      kitchenChores: [],
       laundry: [
         {
           id: 'hell',
@@ -478,11 +530,12 @@ export function App() {
 
   // Dynamischer Comic-Hintergrund je nach aktivem Tab (wie die Pop-Art Comic Panels)
   const tabBackgroundClass: Record<NavigationTab, string> = {
-    dashboard: 'comic-sunburst-amber', // Warmes Pop-Art Gelb / Strahlen (wie Chers & Superman)
+    dashboard: 'comic-sunburst-amber', // Warmes Pop-Art Gelb / Strahlen
+    kitchen: 'comic-sunburst-teal',    // Retro Küchen-Türkis / Strahlen
     week: 'comic-sunburst-rose',       // Kräftiges Pop-Art Rosa / Strahlen
     laundry: 'comic-sunburst-sky',     // Frisches Comic Hellblau / Strahlen
     waste: 'comic-sunburst-green',     // Pop-Art Mintgrün / Strahlen
-    schedule: 'comic-sunburst-teal',   // Vintage Retro Türkis / Strahlen (wie Sugar Taste Panel)
+    schedule: 'comic-sunburst-teal',   // Vintage Retro Türkis / Strahlen
   }
 
   return (
@@ -619,6 +672,17 @@ export function App() {
                 </div>
               </section>
             </>
+          )}
+
+          {/* Neues Küchen-Dashboard */}
+          {activeTab === 'kitchen' && (
+            <KitchenTracker
+              kitchenChores={state.kitchenChores || []}
+              members={state.members}
+              calendarEmail={state.googleCalendarUrl}
+              onCompleteKitchenChore={handleCompleteKitchenChore}
+              onAddKitchenChore={handleAddKitchenChore}
+            />
           )}
 
           {/* Neues Wochen-Dashboard */}
@@ -814,6 +878,9 @@ export function App() {
         onSelectTab={setActiveTab}
         badges={{
           dashboard: dueChoresCount + urgentWasteCount,
+          kitchen: (state.kitchenChores || []).filter(
+            (c) => getChoreDueInfo(c as unknown as StandardChore).isDueOrOverdue
+          ).length,
           week: dueChoresCount,
           laundry: activeLaundryCount,
           waste: urgentWasteCount,

@@ -83,7 +83,22 @@ export interface WasteScheduleItem {
 }
 
 /**
- * 5. Standard Chores (Wiederkehrende Aufgaben mit individuellen XP)
+ * 5. Kitchen Chores / Küche Todos
+ */
+export interface KitchenChore {
+  id: string
+  title: string
+  description?: string
+  intervalDays: number
+  lastCompletedAt: string
+  assignedTo: MemberId
+  rotationOrder: [MemberId, MemberId]
+  estimatedMinutes: number
+  xpReward: number
+}
+
+/**
+ * 6. Standard Chores (Wiederkehrende Aufgaben mit individuellen XP)
  */
 export interface StandardChore {
   id: string
@@ -98,13 +113,13 @@ export interface StandardChore {
 }
 
 /**
- * 6. Task Activity History (Wer hat wann was gemacht)
+ * 7. Task Activity History (Wer hat wann was gemacht)
  */
 export interface TaskActivityLog {
   id: string
   choreId?: string
   title: string
-  category: 'chore' | 'dishwasher' | 'laundry' | 'waste'
+  category: 'chore' | 'dishwasher' | 'laundry' | 'waste' | 'kitchen'
   completedBy: MemberId
   completedByName: string
   completedByAvatar: string
@@ -115,7 +130,7 @@ export interface TaskActivityLog {
 /**
  * Navigation Tabs for Mobile Bottom Navigation
  */
-export type NavigationTab = 'dashboard' | 'week' | 'laundry' | 'waste' | 'schedule'
+export type NavigationTab = 'dashboard' | 'kitchen' | 'week' | 'laundry' | 'waste' | 'schedule'
 
 /**
  * Complete Household Store Snapshot
@@ -127,6 +142,7 @@ export interface HouseholdState {
   members: HouseholdMember[]
   activeMemberId: MemberId
   dishwasher: DishwasherState
+  kitchenChores: KitchenChore[]
   laundry: LaundryItem[]
   waste: WasteScheduleItem[]
   chores: StandardChore[]

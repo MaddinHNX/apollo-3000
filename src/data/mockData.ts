@@ -17,6 +17,7 @@ const getRelativeTimestampISO = (offsetHours: number): string => {
 export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
   householdId: 'apollo-home-1',
   householdName: 'Hauptquartier 3000',
+  googleCalendarUrl: 'schorleweg@gmail.com',
   members: [
     {
       id: 'member-a',
@@ -43,6 +44,64 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
     updatedAt: getRelativeTimestampISO(-2),
     xpReward: 15,
   },
+
+  kitchenChores: [
+    {
+      id: 'kueche_arbeitsflaeche',
+      title: 'Arbeitsflächen & Ceranfeld abwischen',
+      description: 'Krümel entfernen, fettfrei wischen & Spüle glänzen lassen',
+      intervalDays: 1,
+      lastCompletedAt: getRelativeDateISO(-1),
+      assignedTo: 'member-a',
+      rotationOrder: ['member-a', 'member-b'],
+      estimatedMinutes: 10,
+      xpReward: 15,
+    },
+    {
+      id: 'kueche_kuehlschrank',
+      title: 'Kühlschrank checken & auswischen',
+      description: 'Abgelaufenes entsorgen und Glasböden feucht wischen',
+      intervalDays: 7,
+      lastCompletedAt: getRelativeDateISO(-6),
+      assignedTo: 'member-b',
+      rotationOrder: ['member-a', 'member-b'],
+      estimatedMinutes: 20,
+      xpReward: 35,
+    },
+    {
+      id: 'kueche_backofen',
+      title: 'Backofen & Mikrowelle reinigen',
+      description: 'Backbleche schrubben und Innenraum mit Backofenspray',
+      intervalDays: 30,
+      lastCompletedAt: getRelativeDateISO(-25),
+      assignedTo: 'member-a',
+      rotationOrder: ['member-a', 'member-b'],
+      estimatedMinutes: 30,
+      xpReward: 50,
+    },
+    {
+      id: 'kueche_kaffeemaschine',
+      title: 'Kaffeemaschine / Wasserkocher entkalken',
+      description: 'Entkalker durchlaufen lassen & Wassertank säubern',
+      intervalDays: 14,
+      lastCompletedAt: getRelativeDateISO(-12),
+      assignedTo: 'member-b',
+      rotationOrder: ['member-a', 'member-b'],
+      estimatedMinutes: 15,
+      xpReward: 25,
+    },
+    {
+      id: 'kueche_spueltuch',
+      title: 'Geschirrtuch & Spülschwamm wechseln',
+      description: 'Alten Schwamm entsorgen / Geschirrtuch in 60° Wäsche',
+      intervalDays: 3,
+      lastCompletedAt: getRelativeDateISO(-3),
+      assignedTo: 'member-a',
+      rotationOrder: ['member-a', 'member-b'],
+      estimatedMinutes: 5,
+      xpReward: 10,
+    },
+  ],
 
   laundry: [
     {
