@@ -90,10 +90,12 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+html,
 body {
   margin: 0;
+  padding: 0;
   font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
-  background-color: #f7e6bb;
+  background-color: #ffffff;
   color: #111827;
   overscroll-behavior-y: none;
 }

@@ -58,7 +58,7 @@ export function BottomNav({ activeTab, onSelectTab, badges = {} }: BottomNavProp
       {/* 2. Feste Bottom Navigation */}
       <nav
         aria-label="Hauptnavigation"
-        className="fixed bottom-0 left-0 right-0 z-40 border-t-3 border-black bg-white/95 backdrop-blur-xl pb-safe shadow-lg"
+        className="fixed bottom-0 left-0 right-0 z-40 border-t-3 border-black bg-white pb-safe shadow-lg"
       >
         <div className="mx-auto flex max-w-[430px] items-center justify-around px-1 pt-2">
           {NAV_ITEMS.map(({ id, label, icon: Icon }) => {

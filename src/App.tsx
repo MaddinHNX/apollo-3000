@@ -540,17 +540,16 @@ export function App() {
 
   return (
     <div
-      className={`min-h-dvh transition-colors duration-300 ${tabBackgroundClass[activeTab]} text-slate-900 comic-halftone-dots`}
+      className={`min-h-dvh transition-colors duration-300 ${tabBackgroundClass[activeTab]} text-slate-900 comic-halftone-dots flex flex-col`}
     >
-      {/* Mobile-First Container (390px Viewport) */}
-      <div className="mx-auto flex min-h-dvh max-w-[430px] flex-col px-4 pb-28 pt-safe">
-        {/* Vintage Comic Header */}
-        <header className="sticky top-0 z-30 -mx-4 mb-4 border-b-3 border-black bg-white/95 px-4 py-3 backdrop-blur-xl shadow-sm">
-          <div className="flex flex-col gap-2.5">
-            {/* Obere Leiste: Apollo 3000 + Haushaltsname & Einloggen-Button */}
+      {/* 1. Volle Breite: Bündiger Vintage Comic Header */}
+      <header className="sticky top-0 left-0 right-0 z-30 w-full border-b-3 border-black bg-white/95 backdrop-blur-xl shadow-sm">
+        <div className="mx-auto max-w-[430px] px-4 pt-safe pb-2.5">
+          <div className="flex flex-col gap-2">
+            {/* Obere Zeile: Apollo 3000 + Haushaltsname & Haushalt-Button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border-2 border-black bg-amber-400 comic-shadow-sm">
+                <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border-2 border-black bg-amber-400 comic-shadow-sm">
                   <img
                     src={maidIcon}
                     alt="Apollo 3000 Comic Putzfrau"
@@ -561,7 +560,7 @@ export function App() {
                   <h1 className="font-comic text-2xl tracking-wider text-slate-900 leading-none">
                     APOLLO 3000
                   </h1>
-                  <span className="font-comic text-xs uppercase text-slate-600">
+                  <span className="font-comic text-[11px] uppercase text-slate-500">
                     {state.householdName}
                   </span>
                 </div>
@@ -571,7 +570,7 @@ export function App() {
               <button
                 type="button"
                 onClick={() => setIsAuthModalOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-xl border-2 border-black bg-amber-400 px-3 py-1.5 font-comic text-xs uppercase text-black comic-shadow-sm transition hover:bg-amber-300 active:translate-y-0.5 font-bold"
+                className="inline-flex items-center gap-1.5 rounded-xl border-2 border-black bg-white px-2.5 py-1.5 font-comic text-xs uppercase text-slate-900 comic-shadow-sm transition hover:bg-slate-100 active:translate-y-0.5 font-bold"
                 title="Haushalt, Google Kalender & Synchronisation verwalten"
               >
                 <Settings className="h-3.5 w-3.5 stroke-[2.5]" />
@@ -579,8 +578,8 @@ export function App() {
               </button>
             </div>
 
-            {/* Untere Leiste: Name und Icons der Personen (Klick öffnet Wochenübersicht dieser Person) */}
-            <div className="flex items-center gap-2 rounded-2xl border-2 border-black bg-amber-50 p-1.5 comic-shadow-sm">
+            {/* Untere Leiste: Profil-Segmented-Switch (Sauber & modern, ohne zweiten gelben Balken!) */}
+            <div className="grid grid-cols-2 gap-1.5 rounded-2xl border-2 border-black bg-slate-100 p-1">
               {state.members.map((member) => {
                 const isSelected = member.id === activeMember.id
                 const openCount = state.chores.filter(
@@ -596,23 +595,23 @@ export function App() {
                       handleSelectMember(member.id)
                       setInspectingMember(member)
                     }}
-                    className={`flex flex-1 items-center justify-between gap-1.5 rounded-xl px-2.5 py-1.5 transition ${
+                    className={`flex items-center justify-between gap-1.5 rounded-xl px-2.5 py-1.5 transition ${
                       isSelected
-                        ? 'border border-black bg-amber-400 text-black comic-shadow-sm font-bold'
-                        : 'bg-white/80 text-slate-700 hover:bg-white'
+                        ? 'border-2 border-black bg-white text-slate-900 comic-shadow-sm font-bold ring-2 ring-amber-400/50'
+                        : 'border border-transparent bg-transparent text-slate-600 hover:text-slate-900'
                     }`}
                   >
                     <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-lg">{member.avatar}</span>
+                      <span className="text-base">{member.avatar}</span>
                       <span className="font-comic text-xs uppercase tracking-wide truncate">
                         {member.name}
                       </span>
                     </div>
                     <span
-                      className={`rounded-md px-1.5 py-0.2 font-comic text-[10px] ${
+                      className={`rounded-md px-1.5 py-0.2 font-comic text-[10px] font-bold ${
                         isSelected
-                          ? 'bg-black text-amber-300'
-                          : 'bg-slate-200 text-slate-700'
+                          ? 'border border-black bg-amber-400 text-black'
+                          : 'bg-slate-200 text-slate-600'
                       }`}
                     >
                       {openCount} Tasks
@@ -622,8 +621,11 @@ export function App() {
               })}
             </div>
           </div>
-        </header>
+        </div>
+      </header>
 
+      {/* 2. Zentrierter Content-Bereich */}
+      <div className="mx-auto flex w-full max-w-[430px] flex-1 flex-col px-4 pb-28 pt-4">
         {/* Main Content */}
         <main className="flex-1 space-y-4">
           {activeTab === 'dashboard' && (
