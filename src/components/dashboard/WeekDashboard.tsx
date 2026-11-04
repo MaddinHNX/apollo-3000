@@ -2,6 +2,7 @@ import {
   CalendarDays,
   CheckCircle2,
   History,
+  Settings2,
   Trophy,
 } from 'lucide-react'
 import type {
@@ -14,6 +15,7 @@ interface WeekDashboardProps {
   state: HouseholdState
   members: HouseholdMember[]
   onCompleteChore: (choreId: string) => void
+  onOpenSettings: () => void
 }
 
 function formatRelativeTime(isoString: string): string {
@@ -32,6 +34,7 @@ export function WeekDashboard({
   state,
   members,
   onCompleteChore,
+  onOpenSettings,
 }: WeekDashboardProps) {
   const memberA = members[0]
   const memberB = members[1]
@@ -174,9 +177,14 @@ export function WeekDashboard({
               Wochen-Aufgaben ({state.chores.length})
             </h3>
           </div>
-          <span className="rounded-xl border border-black bg-black/60 px-2.5 py-1 font-comic text-xs uppercase text-amber-300">
-            A/B Rotation
-          </span>
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className="inline-flex items-center gap-1.5 rounded-xl border-2 border-black bg-amber-400 px-2.5 py-1 font-comic text-xs uppercase text-black comic-shadow-sm hover:bg-amber-300"
+          >
+            <Settings2 className="h-3.5 w-3.5 stroke-[2.5]" />
+            <span>Tasks &amp; XP anpassen</span>
+          </button>
         </div>
 
         <div className="mt-3.5 space-y-2.5">
@@ -193,6 +201,9 @@ export function WeekDashboard({
                   <div className="flex items-center gap-2">
                     <span className="font-comic text-base text-white">
                       {chore.title}
+                    </span>
+                    <span className="rounded-md border border-black bg-amber-400 px-1.5 py-0.2 font-comic text-[11px] font-bold text-black">
+                      +{chore.xpReward || 30} XP
                     </span>
                     <span
                       className={`rounded-md border border-black px-1.5 py-0.2 font-comic text-[11px] uppercase ${

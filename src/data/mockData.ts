@@ -1,6 +1,5 @@
 import type { HouseholdState } from '../types/household'
 
-// Helper for dynamic dates relative to today so the mock data is always fresh & realistic
 const getRelativeDateISO = (offsetDays: number): string => {
   const d = new Date()
   d.setDate(d.getDate() + offsetDays)
@@ -22,7 +21,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
     {
       id: 'member-a',
       name: 'Maddin',
-      color: '#6366f1', // Indigo
+      color: '#6366f1',
       avatar: '🧑‍🚀',
       email: 'maddin@apollo.local',
       roleLabel: 'Person A',
@@ -30,7 +29,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
     {
       id: 'member-b',
       name: 'Alex',
-      color: '#ec4899', // Pink
+      color: '#ec4899',
       avatar: '👩‍🚀',
       email: 'alex@apollo.local',
       roleLabel: 'Person B',
@@ -42,6 +41,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
     status: 'needs_unloading',
     lastHandledBy: 'member-b',
     updatedAt: getRelativeTimestampISO(-2),
+    xpReward: 15,
   },
 
   laundry: [
@@ -53,6 +53,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
       stage: 'hanging',
       startedAt: getRelativeTimestampISO(-5),
       assignedTo: 'member-a',
+      xpReward: 20,
     },
     {
       id: 'dunkel',
@@ -62,6 +63,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
       stage: 'washing',
       startedAt: getRelativeTimestampISO(-1),
       assignedTo: 'member-b',
+      xpReward: 20,
     },
     {
       id: 'bunt',
@@ -71,6 +73,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
       stage: 'idle',
       startedAt: null,
       assignedTo: null,
+      xpReward: 20,
     },
     {
       id: '60_bettwaesche',
@@ -80,6 +83,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
       stage: 'folding',
       startedAt: getRelativeTimestampISO(-18),
       assignedTo: 'member-a',
+      xpReward: 35,
     },
     {
       id: '60_unterwaesche',
@@ -89,6 +93,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
       stage: 'idle',
       startedAt: null,
       assignedTo: null,
+      xpReward: 20,
     },
     {
       id: '60_geschirrtuecher',
@@ -98,6 +103,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
       stage: 'done',
       startedAt: getRelativeTimestampISO(-26),
       assignedTo: 'member-b',
+      xpReward: 20,
     },
   ],
 
@@ -110,6 +116,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
       reminderEveningBefore: true,
       assignedTo: 'member-a',
       notes: 'Braune Tonne an die Straße stellen',
+      xpReward: 25,
     },
     {
       id: 'gelber_sack',
@@ -119,6 +126,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
       reminderEveningBefore: true,
       assignedTo: 'member-b',
       notes: 'Im Keller gebündelt bereitstellen',
+      xpReward: 25,
     },
     {
       id: 'restmuell',
@@ -128,6 +136,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
       reminderEveningBefore: true,
       assignedTo: 'member-a',
       notes: 'Schwarze Tonne (2-wöchentlich)',
+      xpReward: 25,
     },
     {
       id: 'pappe',
@@ -137,6 +146,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
       reminderEveningBefore: true,
       assignedTo: 'member-b',
       notes: 'Kartons vorher klein falten',
+      xpReward: 25,
     },
     {
       id: 'altglas',
@@ -146,6 +156,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
       reminderEveningBefore: false,
       assignedTo: 'member-a',
       notes: 'Glascontainer am Supermarkt (Weiß/Grün/Braun)',
+      xpReward: 30,
     },
   ],
 
@@ -159,6 +170,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
       assignedTo: 'member-a',
       rotationOrder: ['member-a', 'member-b'],
       estimatedMinutes: 20,
+      xpReward: 40,
     },
     {
       id: 'saugen_nass_wischen',
@@ -169,6 +181,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
       assignedTo: 'member-b',
       rotationOrder: ['member-a', 'member-b'],
       estimatedMinutes: 45,
+      xpReward: 50,
     },
     {
       id: 'fenster_putzen',
@@ -179,6 +192,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
       assignedTo: 'member-a',
       rotationOrder: ['member-a', 'member-b'],
       estimatedMinutes: 60,
+      xpReward: 70,
     },
   ],
 
@@ -221,7 +235,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
       completedByName: 'Maddin',
       completedByAvatar: '🧑‍🚀',
       timestamp: getRelativeTimestampISO(-28),
-      xpPoints: 25,
+      xpPoints: 30,
     },
     {
       id: 'log-5',
@@ -231,7 +245,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
       completedByName: 'Alex',
       completedByAvatar: '👩‍🚀',
       timestamp: getRelativeTimestampISO(-72),
-      xpPoints: 30,
+      xpPoints: 40,
     },
   ],
 }

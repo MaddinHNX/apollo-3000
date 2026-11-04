@@ -29,6 +29,7 @@ export interface DishwasherState {
   status: DishwasherStatus
   lastHandledBy: MemberId
   updatedAt: string // ISO 8601 timestamp
+  xpReward: number // Default 15 XP
 }
 
 /**
@@ -57,6 +58,7 @@ export interface LaundryItem {
   stage: LaundryStage
   startedAt: string | null // ISO 8601 timestamp when cycle started
   assignedTo: MemberId | null
+  xpReward: number // Default 20 XP
 }
 
 /**
@@ -77,25 +79,22 @@ export interface WasteScheduleItem {
   reminderEveningBefore: boolean
   assignedTo?: MemberId
   notes?: string
+  xpReward: number // Default 25 XP
 }
 
 /**
- * 5. Standard Chores (Wiederkehrende Kernaufgaben mit A/B-Rotation)
+ * 5. Standard Chores (Wiederkehrende Aufgaben mit individuellen XP)
  */
-export type StandardChoreSlug =
-  | 'fenster_putzen'
-  | 'saugen_nass_wischen'
-  | 'klo_reinigen'
-
 export interface StandardChore {
-  id: StandardChoreSlug | string
-  title: string // e.g., "Fenster putzen", "Saugen & nass wischen", "Klo reinigen"
+  id: string
+  title: string
   description?: string
-  intervalDays: number // e.g. 7, 14, 30
+  intervalDays: number
   lastCompletedAt: string // ISO 8601 date/timestamp
   assignedTo: MemberId // Person A or Person B (rotates automatically on completion)
   rotationOrder: [MemberId, MemberId] // [Person A, Person B]
   estimatedMinutes: number
+  xpReward: number // Individuelle XP-Belohnung (z.B. 10 - 100 XP)
 }
 
 /**

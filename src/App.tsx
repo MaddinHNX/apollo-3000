@@ -19,6 +19,7 @@ import { WasteAlertBanner } from './components/dashboard/WasteAlertBanner'
 import { WeekDashboard } from './components/dashboard/WeekDashboard'
 import { LaundryTracker } from './components/laundry/LaundryTracker'
 import { BottomNav } from './components/layout/BottomNav'
+import { ChoreSettingsModal } from './components/settings/ChoreSettingsModal'
 import { isFirebaseConfigured, subscribeToHousehold, syncHouseholdState } from './config/firebase'
 import { INITIAL_HOUSEHOLD_STATE } from './data/mockData'
 import type {
@@ -27,6 +28,7 @@ import type {
   LaundryStage,
   LaundryType,
   NavigationTab,
+  StandardChore,
   TaskActivityLog,
   WasteType,
 } from './types/household'
@@ -63,6 +65,7 @@ export function App() {
 
   const [activeTab, setActiveTab] = useState<NavigationTab>('dashboard')
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [isChoreSettingsOpen, setIsChoreSettingsOpen] = useState(false)
   const [simulateEveningAlert, setSimulateEveningAlert] = useState<boolean>(
     () => new Date().getHours() >= 18
   )
@@ -136,6 +139,7 @@ export function App() {
       return {
         ...prev,
         dishwasher: {
+          ...prev.dishwasher,
           status: nextStatus,
           lastHandledBy: prev.activeMemberId,
           updatedAt: new Date().toISOString(),
@@ -241,6 +245,7 @@ export function App() {
     const todayStr = new Date().toISOString().split('T')[0]
     updateStateAndSync((prev) => {
       const chore = prev.chores.find((c) => c.id === choreId)
+      const earnedXP = chore?.xpReward || 30
       const newLogs: TaskActivityLog[] = chore
         ? [
             {
@@ -251,7 +256,7 @@ export function App() {
               completedByName: activeMember.name,
               completedByAvatar: activeMember.avatar,
               timestamp: new Date().toISOString(),
-              xpPoints: 30,
+              xpPoints: earnedXP,
             },
             ...prev.activityLog,
           ]
@@ -274,6 +279,28 @@ export function App() {
         activityLog: newLogs.slice(0, 30),
       }
     })
+  }
+
+  // Save / Update Chore
+  const handleSaveChore = (choreToSave: StandardChore) => {
+    updateStateAndSync((prev) => {
+      const exists = prev.chores.some((c) => c.id === choreToSave.id)
+      const nextChores = exists
+        ? prev.chores.map((c) => (c.id === choreToSave.id ? choreToSave : c))
+        : [...prev.chores, choreToSave]
+      return {
+        ...prev,
+        chores: nextChores,
+      }
+    })
+  }
+
+  // Delete Chore
+  const handleDeleteChore = (choreId: string) => {
+    updateStateAndSync((prev) => ({
+      ...prev,
+      chores: prev.chores.filter((c) => c.id !== choreId),
+    }))
   }
 
   const handleUpdateHouseholdId = (newId: string) => {
@@ -447,6 +474,7 @@ export function App() {
               state={state}
               members={state.members}
               onCompleteChore={handleCompleteChore}
+              onOpenSettings={() => setIsChoreSettingsOpen(true)}
             />
           )}
 
@@ -602,6 +630,15 @@ export function App() {
         activeMember={activeMember}
         onUpdateHouseholdId={handleUpdateHouseholdId}
         onGoogleUserConnected={handleGoogleUserConnected}
+      />
+
+      {/* Chore & XP Settings Modal */}
+      <ChoreSettingsModal
+        isOpen={isChoreSettingsOpen}
+        onClose={() => setIsChoreSettingsOpen(false)}
+        householdState={state}
+        onSaveChore={handleSaveChore}
+        onDeleteChore={handleDeleteChore}
       />
 
       {/* Fixed Mobile Bottom Navigation mit Wochen-Tab */}
