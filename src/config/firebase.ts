@@ -1,6 +1,23 @@
-import { type FirebaseApp, getApps, initializeApp } from 'firebase/app'
-import { type Auth, getAuth } from 'firebase/auth'
-import { type Firestore, getFirestore } from 'firebase/firestore'
+import {
+  type FirebaseApp,
+  getApps,
+  initializeApp,
+} from 'firebase/app'
+import {
+  type Auth,
+  GoogleAuthProvider,
+  getAuth,
+  signInWithPopup,
+  signOut,
+} from 'firebase/auth'
+import {
+  type Firestore,
+  doc,
+  getFirestore,
+  onSnapshot,
+  setDoc,
+} from 'firebase/firestore'
+import type { HouseholdState } from '../types/household'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -11,10 +28,6 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 }
 
-/**
- * Checks whether valid Firebase environment variables have been configured.
- * If false, the app runs seamlessly with local Mock Data & LocalStorage persistence.
- */
 export const isFirebaseConfigured = Boolean(
   firebaseConfig.apiKey &&
     firebaseConfig.apiKey !== 'your-api-key-here' &&
@@ -26,9 +39,61 @@ let db: Firestore | null = null
 let auth: Auth | null = null
 
 if (isFirebaseConfigured) {
-  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
-  db = getFirestore(app)
-  auth = getAuth(app)
+  try {
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+    db = getFirestore(app)
+    auth = getAuth(app)
+  } catch (err) {
+    console.warn('Firebase Init Warning:', err)
+  }
 }
 
 export { app, auth, db }
+
+/**
+ * Log in with Google Account
+ */
+export async function loginWithGoogle() {
+  if (!auth) {
+    throw new Error('Firebase Auth ist noch nicht konfiguriert.')
+  }
+  const provider = new GoogleAuthProvider()
+  provider.addScope('https://www.googleapis.com/auth/calendar.events')
+  return await signInWithPopup(auth, provider)
+}
+
+/**
+ * Sign out
+ */
+export async function logoutUser() {
+  if (!auth) return
+  await signOut(auth)
+}
+
+/**
+ * Subscribe to realtime household changes in Firestore
+ */
+export function subscribeToHousehold(
+  householdId: string,
+  onUpdate: (state: HouseholdState) => void
+) {
+  if (!db) return () => {}
+  const householdRef = doc(db, 'households', householdId)
+  return onSnapshot(householdRef, (snapshot) => {
+    if (snapshot.exists()) {
+      onUpdate(snapshot.data() as HouseholdState)
+    }
+  })
+}
+
+/**
+ * Sync household state to Firestore
+ */
+export async function syncHouseholdState(
+  householdId: string,
+  state: HouseholdState
+) {
+  if (!db) return
+  const householdRef = doc(db, 'households', householdId)
+  await setDoc(householdRef, state, { merge: true })
+}

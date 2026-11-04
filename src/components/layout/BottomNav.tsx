@@ -1,4 +1,4 @@
-import { CalendarCheck2, Home, Shirt, Trash2 } from 'lucide-react'
+import { CalendarCheck2, Home, LayoutDashboard, Shirt, Trash2 } from 'lucide-react'
 import type { NavigationTab } from '../../types/household'
 
 interface BottomNavProps {
@@ -13,6 +13,7 @@ const NAV_ITEMS: {
   icon: typeof Home
 }[] = [
   { id: 'dashboard', label: 'HEUTE', icon: Home },
+  { id: 'week', label: 'WOCHE', icon: LayoutDashboard },
   { id: 'laundry', label: 'WÄSCHE', icon: Shirt },
   { id: 'waste', label: 'MÜLL', icon: Trash2 },
   { id: 'schedule', label: 'PLAN', icon: CalendarCheck2 },
@@ -24,7 +25,7 @@ export function BottomNav({ activeTab, onSelectTab, badges = {} }: BottomNavProp
       aria-label="Hauptnavigation"
       className="fixed bottom-0 left-0 right-0 z-50 border-t-3 border-black bg-[#1b1009]/95 backdrop-blur-xl pb-safe"
     >
-      <div className="mx-auto flex max-w-[430px] items-center justify-around px-2 pt-2">
+      <div className="mx-auto flex max-w-[430px] items-center justify-around px-1 pt-2">
         {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
           const isActive = activeTab === id
           const badgeCount = badges[id] ?? 0
@@ -41,7 +42,7 @@ export function BottomNav({ activeTab, onSelectTab, badges = {} }: BottomNavProp
               }`}
             >
               <div
-                className={`relative flex h-8 w-12 items-center justify-center rounded-2xl transition-all ${
+                className={`relative flex h-8 w-11 items-center justify-center rounded-2xl transition-all ${
                   isActive
                     ? 'border-2 border-black bg-amber-400 text-black comic-shadow-sm -translate-y-0.5'
                     : 'group-hover:bg-black/30'
@@ -59,8 +60,8 @@ export function BottomNav({ activeTab, onSelectTab, badges = {} }: BottomNavProp
                 )}
               </div>
               <span
-                className={`font-comic text-xs uppercase tracking-wider ${
-                  isActive ? 'text-amber-300' : 'text-amber-200/50'
+                className={`font-comic text-[11px] uppercase tracking-wider ${
+                  isActive ? 'text-amber-300 font-bold' : 'text-amber-200/50'
                 }`}
               >
                 {label}

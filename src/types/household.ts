@@ -12,6 +12,7 @@ export interface HouseholdMember {
   name: string
   color: string // Hex or Tailwind color token
   avatar: string // Emoji or avatar URL
+  email?: string
   roleLabel?: 'Person A' | 'Person B'
 }
 
@@ -98,18 +99,36 @@ export interface StandardChore {
 }
 
 /**
+ * 6. Task Activity History (Wer hat wann was gemacht)
+ */
+export interface TaskActivityLog {
+  id: string
+  choreId?: string
+  title: string
+  category: 'chore' | 'dishwasher' | 'laundry' | 'waste'
+  completedBy: MemberId
+  completedByName: string
+  completedByAvatar: string
+  timestamp: string // ISO 8601
+  xpPoints: number
+}
+
+/**
  * Navigation Tabs for Mobile Bottom Navigation
  */
-export type NavigationTab = 'dashboard' | 'laundry' | 'waste' | 'schedule'
+export type NavigationTab = 'dashboard' | 'week' | 'laundry' | 'waste' | 'schedule'
 
 /**
  * Complete Household Store Snapshot
  */
 export interface HouseholdState {
+  householdId: string
+  householdName: string
   members: HouseholdMember[]
   activeMemberId: MemberId
   dishwasher: DishwasherState
   laundry: LaundryItem[]
   waste: WasteScheduleItem[]
   chores: StandardChore[]
+  activityLog: TaskActivityLog[]
 }

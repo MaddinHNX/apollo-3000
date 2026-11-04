@@ -6,17 +6,20 @@ import {
   Flame,
   RefreshCcw,
   Sparkles,
+  Users,
   Zap,
 } from 'lucide-react'
+import { HouseholdAuthModal } from './components/auth/HouseholdAuthModal'
 import { DishwasherQuickToggle } from './components/dashboard/DishwasherQuickToggle'
 import {
   TodayChoresList,
   getChoreDueInfo,
 } from './components/dashboard/TodayChoresList'
 import { WasteAlertBanner } from './components/dashboard/WasteAlertBanner'
+import { WeekDashboard } from './components/dashboard/WeekDashboard'
 import { LaundryTracker } from './components/laundry/LaundryTracker'
 import { BottomNav } from './components/layout/BottomNav'
-import { isFirebaseConfigured } from './config/firebase'
+import { isFirebaseConfigured, subscribeToHousehold, syncHouseholdState } from './config/firebase'
 import { INITIAL_HOUSEHOLD_STATE } from './data/mockData'
 import type {
   DishwasherStatus,
@@ -24,10 +27,11 @@ import type {
   LaundryStage,
   LaundryType,
   NavigationTab,
+  TaskActivityLog,
   WasteType,
 } from './types/household'
 
-const STORAGE_KEY = 'apollo3000_household_state_v2'
+const STORAGE_KEY = 'apollo3000_household_state_v3'
 
 const DISHWASHER_SEQUENCE: DishwasherStatus[] = [
   'empty',
@@ -58,33 +62,76 @@ export function App() {
   })
 
   const [activeTab, setActiveTab] = useState<NavigationTab>('dashboard')
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [simulateEveningAlert, setSimulateEveningAlert] = useState<boolean>(
     () => new Date().getHours() >= 18
   )
 
+  // Firestore Sync Listener wenn konfiguriert
+  useEffect(() => {
+    if (isFirebaseConfigured && state.householdId) {
+      const unsubscribe = subscribeToHousehold(state.householdId, (remoteState) => {
+        setState((prev) => ({
+          ...prev,
+          ...remoteState,
+        }))
+      })
+      return () => unsubscribe()
+    }
+  }, [state.householdId])
+
+  // LocalStorage Persistenz
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
     } catch {
-      // Ignore quota errors
+      // Ignore
     }
   }, [state])
 
   const activeMember =
     state.members.find((m) => m.id === state.activeMemberId) ?? state.members[0]
 
-  // Switch Active Person
-  const handleSelectMember = (memberId: string) => {
-    setState((prev) => ({ ...prev, activeMemberId: memberId }))
+  // Synchronisation trigger
+  const updateStateAndSync = (updater: (prev: HouseholdState) => HouseholdState) => {
+    setState((prev) => {
+      const next = updater(prev)
+      if (isFirebaseConfigured && next.householdId) {
+        syncHouseholdState(next.householdId, next).catch(console.error)
+      }
+      return next
+    })
   }
 
-  // Dishwasher Toggle
+  // Switch Active Person
+  const handleSelectMember = (memberId: string) => {
+    updateStateAndSync((prev) => ({ ...prev, activeMemberId: memberId }))
+  }
+
+  // Dishwasher Toggle mit XP Logging
   const handleCycleDishwasher = (targetStatus?: DishwasherStatus) => {
-    setState((prev) => {
+    updateStateAndSync((prev) => {
       const currentIdx = DISHWASHER_SEQUENCE.indexOf(prev.dishwasher.status)
       const nextStatus =
         targetStatus ??
         DISHWASHER_SEQUENCE[(currentIdx + 1) % DISHWASHER_SEQUENCE.length]
+
+      const isUnloadingDone = nextStatus === 'empty'
+      const newLogs: TaskActivityLog[] = isUnloadingDone
+        ? [
+            {
+              id: `log-${Date.now()}`,
+              title: 'Spülmaschine ausgeräumt',
+              category: 'dishwasher',
+              completedBy: prev.activeMemberId,
+              completedByName: activeMember.name,
+              completedByAvatar: activeMember.avatar,
+              timestamp: new Date().toISOString(),
+              xpPoints: 15,
+            },
+            ...prev.activityLog,
+          ]
+        : prev.activityLog
 
       return {
         ...prev,
@@ -93,77 +140,157 @@ export function App() {
           lastHandledBy: prev.activeMemberId,
           updatedAt: new Date().toISOString(),
         },
+        activityLog: newLogs.slice(0, 30),
       }
     })
   }
 
-  // Laundry Stage Advancement
+  // Laundry Stage Advancement mit Logging
   const handleAdvanceLaundry = (
     laundryId: LaundryType,
     targetStage?: LaundryStage
   ) => {
-    setState((prev) => ({
-      ...prev,
-      laundry: prev.laundry.map((item) => {
-        if (item.id !== laundryId) return item
-        const currentIdx = LAUNDRY_SEQUENCE.indexOf(item.stage)
-        const nextStage =
-          targetStage ??
-          LAUNDRY_SEQUENCE[(currentIdx + 1) % LAUNDRY_SEQUENCE.length]
+    updateStateAndSync((prev) => {
+      const targetItem = prev.laundry.find((l) => l.id === laundryId)
+      const currentIdx = targetItem ? LAUNDRY_SEQUENCE.indexOf(targetItem.stage) : 0
+      const nextStage =
+        targetStage ??
+        LAUNDRY_SEQUENCE[(currentIdx + 1) % LAUNDRY_SEQUENCE.length]
 
-        return {
-          ...item,
-          stage: nextStage,
-          startedAt:
-            nextStage === 'washing'
-              ? new Date().toISOString()
-              : nextStage === 'idle'
-                ? null
-                : item.startedAt,
-          assignedTo: nextStage === 'idle' ? null : prev.activeMemberId,
-        }
-      }),
-    }))
+      const isDone = nextStage === 'done'
+      const newLogs: TaskActivityLog[] = isDone && targetItem
+        ? [
+            {
+              id: `log-${Date.now()}`,
+              title: `${targetItem.label} im Schrank verstaut`,
+              category: 'laundry',
+              completedBy: prev.activeMemberId,
+              completedByName: activeMember.name,
+              completedByAvatar: activeMember.avatar,
+              timestamp: new Date().toISOString(),
+              xpPoints: 20,
+            },
+            ...prev.activityLog,
+          ]
+        : prev.activityLog
+
+      return {
+        ...prev,
+        laundry: prev.laundry.map((item) => {
+          if (item.id !== laundryId) return item
+          return {
+            ...item,
+            stage: nextStage,
+            startedAt:
+              nextStage === 'washing'
+                ? new Date().toISOString()
+                : nextStage === 'idle'
+                  ? null
+                  : item.startedAt,
+            assignedTo: nextStage === 'idle' ? null : prev.activeMemberId,
+          }
+        }),
+        activityLog: newLogs.slice(0, 30),
+      }
+    })
   }
 
-  // Waste Management
+  // Waste Management mit XP Logging
   const handleMarkWastePutOut = (wasteId: WasteType) => {
-    setState((prev) => ({
-      ...prev,
-      waste: prev.waste.map((w) => {
-        if (w.id !== wasteId) return w
-        const next = new Date(w.nextPickupDate)
-        next.setDate(next.getDate() + 14)
-        const y = next.getFullYear()
-        const m = String(next.getMonth() + 1).padStart(2, '0')
-        const d = String(next.getDate()).padStart(2, '0')
-        return {
-          ...w,
-          nextPickupDate: `${y}-${m}-${d}`,
-          assignedTo:
-            w.assignedTo === 'member-a' ? 'member-b' : 'member-a',
-        }
-      }),
-    }))
+    updateStateAndSync((prev) => {
+      const item = prev.waste.find((w) => w.id === wasteId)
+      const newLogs: TaskActivityLog[] = item
+        ? [
+            {
+              id: `log-${Date.now()}`,
+              title: `${item.label} an die Straße gestellt`,
+              category: 'waste',
+              completedBy: prev.activeMemberId,
+              completedByName: activeMember.name,
+              completedByAvatar: activeMember.avatar,
+              timestamp: new Date().toISOString(),
+              xpPoints: 25,
+            },
+            ...prev.activityLog,
+          ]
+        : prev.activityLog
+
+      return {
+        ...prev,
+        waste: prev.waste.map((w) => {
+          if (w.id !== wasteId) return w
+          const next = new Date(w.nextPickupDate)
+          next.setDate(next.getDate() + 14)
+          const y = next.getFullYear()
+          const m = String(next.getMonth() + 1).padStart(2, '0')
+          const d = String(next.getDate()).padStart(2, '0')
+          return {
+            ...w,
+            nextPickupDate: `${y}-${m}-${d}`,
+            assignedTo:
+              w.assignedTo === 'member-a' ? 'member-b' : 'member-a',
+          }
+        }),
+        activityLog: newLogs.slice(0, 30),
+      }
+    })
   }
 
-  // Complete Chore with Auto A/B Rotation
+  // Complete Chore with Auto A/B Rotation & XP Logging
   const handleCompleteChore = (choreId: string) => {
     const todayStr = new Date().toISOString().split('T')[0]
-    setState((prev) => ({
+    updateStateAndSync((prev) => {
+      const chore = prev.chores.find((c) => c.id === choreId)
+      const newLogs: TaskActivityLog[] = chore
+        ? [
+            {
+              id: `log-${Date.now()}`,
+              title: chore.title,
+              category: 'chore',
+              completedBy: prev.activeMemberId,
+              completedByName: activeMember.name,
+              completedByAvatar: activeMember.avatar,
+              timestamp: new Date().toISOString(),
+              xpPoints: 30,
+            },
+            ...prev.activityLog,
+          ]
+        : prev.activityLog
+
+      return {
+        ...prev,
+        chores: prev.chores.map((c) => {
+          if (c.id !== choreId) return c
+          const nextPerson =
+            c.rotationOrder[0] === c.assignedTo
+              ? c.rotationOrder[1]
+              : c.rotationOrder[0]
+          return {
+            ...c,
+            lastCompletedAt: todayStr,
+            assignedTo: nextPerson,
+          }
+        }),
+        activityLog: newLogs.slice(0, 30),
+      }
+    })
+  }
+
+  const handleUpdateHouseholdId = (newId: string) => {
+    updateStateAndSync((prev) => ({
       ...prev,
-      chores: prev.chores.map((chore) => {
-        if (chore.id !== choreId) return chore
-        const nextPerson =
-          chore.rotationOrder[0] === chore.assignedTo
-            ? chore.rotationOrder[1]
-            : chore.rotationOrder[0]
-        return {
-          ...chore,
-          lastCompletedAt: todayStr,
-          assignedTo: nextPerson,
-        }
-      }),
+      householdId: newId,
+    }))
+  }
+
+  const handleGoogleUserConnected = (user: { name: string; email: string; avatar: string }) => {
+    updateStateAndSync((prev) => ({
+      ...prev,
+      members: prev.members.map((m) =>
+        m.id === prev.activeMemberId
+          ? { ...m, name: user.name, email: user.email }
+          : m
+      ),
     }))
   }
 
@@ -206,12 +333,17 @@ export function App() {
                   <h1 className="font-comic text-2xl tracking-wider text-amber-300">
                     APOLLO 3000
                   </h1>
-                  <span className="rounded-md border border-black bg-rose-500 px-1.5 py-0.2 font-comic text-[10px] uppercase text-white comic-shadow-sm">
-                    {isFirebaseConfigured ? 'FIREBASE' : 'COMIC ED.'}
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsAuthModalOpen(true)}
+                    className="inline-flex items-center gap-1 rounded-md border border-black bg-rose-500 px-1.5 py-0.2 font-comic text-[10px] uppercase text-white comic-shadow-sm transition hover:bg-rose-400"
+                  >
+                    <Users className="h-2.5 w-2.5 stroke-[2.5]" />
+                    <span>{state.householdId}</span>
+                  </button>
                 </div>
                 <p className="text-[11px] font-semibold text-amber-200/70">
-                  2-Helden Haushalts-Kommando
+                  {state.householdName}
                 </p>
               </div>
             </div>
@@ -225,7 +357,7 @@ export function App() {
                     key={member.id}
                     type="button"
                     onClick={() => handleSelectMember(member.id)}
-                    className={`flex items-center gap-1 rounded-xl px-2.5 py-1 font-comic text-xs uppercase tracking-wide transition ${
+                    className={`flex items-center gap-1 rounded-xl px-2 py-1 font-comic text-xs uppercase tracking-wide transition ${
                       isSelected
                         ? 'border border-black bg-amber-400 text-black font-bold comic-shadow-sm'
                         : 'text-amber-200/50 hover:text-amber-100'
@@ -244,12 +376,12 @@ export function App() {
         <main className="flex-1 space-y-4">
           {activeTab === 'dashboard' && (
             <>
-              {/* Figma Board Quick Link Notice */}
+              {/* Figma Board Link */}
               <div className="flex items-center justify-between rounded-2xl border-2 border-black bg-amber-400/15 p-3 comic-shadow-sm">
                 <div className="flex items-center gap-2">
                   <Zap className="h-4 w-4 text-amber-400 stroke-[2.5]" />
                   <span className="font-comic text-xs uppercase tracking-wide text-amber-300">
-                    Figma Design Board aktiv
+                    Vintage Pop-Art Design Board
                   </span>
                 </div>
                 <a
@@ -258,7 +390,7 @@ export function App() {
                   rel="noreferrer"
                   className="inline-flex items-center gap-1 rounded-lg border border-black bg-amber-400 px-2 py-0.5 font-comic text-[11px] uppercase text-black"
                 >
-                  <span>Board öffnen</span>
+                  <span>Figma</span>
                   <ExternalLink className="h-2.5 w-2.5" />
                 </a>
               </div>
@@ -286,27 +418,36 @@ export function App() {
                 onCompleteChore={handleCompleteChore}
               />
 
-              {/* Laundry Teaser */}
+              {/* Weekly Dashboard Teaser */}
               <section className="rounded-3xl border-3 border-black bg-[#22150d] p-4 comic-shadow">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="font-comic text-lg uppercase tracking-wide text-white">
-                      Wäsche-Pipeline
+                      Wochen-Dashboard
                     </h2>
                     <p className="text-xs text-amber-100/70">
-                      {activeLaundryCount} von 6 Sorten in Arbeit
+                      {state.activityLog.length} Erledigungen diese Woche
                     </p>
                   </div>
                   <button
                     type="button"
-                    onClick={() => setActiveTab('laundry')}
+                    onClick={() => setActiveTab('week')}
                     className="rounded-2xl border-2 border-black bg-amber-400 px-3.5 py-1.5 font-comic text-xs uppercase text-black comic-shadow-sm hover:bg-amber-300"
                   >
-                    Alle Sorten →
+                    Zur Übersicht →
                   </button>
                 </div>
               </section>
             </>
+          )}
+
+          {/* Neues Wochen-Dashboard */}
+          {activeTab === 'week' && (
+            <WeekDashboard
+              state={state}
+              members={state.members}
+              onCompleteChore={handleCompleteChore}
+            />
           )}
 
           {activeTab === 'laundry' && (
@@ -453,11 +594,23 @@ export function App() {
         </main>
       </div>
 
+      {/* Household Auth Modal */}
+      <HouseholdAuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        householdState={state}
+        activeMember={activeMember}
+        onUpdateHouseholdId={handleUpdateHouseholdId}
+        onGoogleUserConnected={handleGoogleUserConnected}
+      />
+
+      {/* Fixed Mobile Bottom Navigation mit Wochen-Tab */}
       <BottomNav
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         badges={{
           dashboard: dueChoresCount + urgentWasteCount,
+          week: dueChoresCount,
           laundry: activeLaundryCount,
           waste: urgentWasteCount,
           schedule: dueChoresCount,

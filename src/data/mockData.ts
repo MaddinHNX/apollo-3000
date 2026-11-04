@@ -16,12 +16,15 @@ const getRelativeTimestampISO = (offsetHours: number): string => {
 }
 
 export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
+  householdId: 'apollo-home-1',
+  householdName: 'Hauptquartier 3000',
   members: [
     {
       id: 'member-a',
       name: 'Maddin',
       color: '#6366f1', // Indigo
       avatar: '🧑‍🚀',
+      email: 'maddin@apollo.local',
       roleLabel: 'Person A',
     },
     {
@@ -29,6 +32,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
       name: 'Alex',
       color: '#ec4899', // Pink
       avatar: '👩‍🚀',
+      email: 'alex@apollo.local',
       roleLabel: 'Person B',
     },
   ],
@@ -101,8 +105,8 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
     {
       id: 'bio',
       label: 'Biomüll',
-      color: '#22c55e', // Green
-      nextPickupDate: getRelativeDateISO(1), // Tomorrow -> triggers evening-before alert!
+      color: '#22c55e',
+      nextPickupDate: getRelativeDateISO(1),
       reminderEveningBefore: true,
       assignedTo: 'member-a',
       notes: 'Braune Tonne an die Straße stellen',
@@ -110,8 +114,8 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
     {
       id: 'gelber_sack',
       label: 'Gelber Sack',
-      color: '#eab308', // Yellow
-      nextPickupDate: getRelativeDateISO(1), // Tomorrow -> triggers evening-before alert!
+      color: '#eab308',
+      nextPickupDate: getRelativeDateISO(1),
       reminderEveningBefore: true,
       assignedTo: 'member-b',
       notes: 'Im Keller gebündelt bereitstellen',
@@ -119,7 +123,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
     {
       id: 'restmuell',
       label: 'Restmüll',
-      color: '#64748b', // Slate
+      color: '#64748b',
       nextPickupDate: getRelativeDateISO(4),
       reminderEveningBefore: true,
       assignedTo: 'member-a',
@@ -128,7 +132,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
     {
       id: 'pappe',
       label: 'Pappe & Papier',
-      color: '#3b82f6', // Blue
+      color: '#3b82f6',
       nextPickupDate: getRelativeDateISO(8),
       reminderEveningBefore: true,
       assignedTo: 'member-b',
@@ -137,7 +141,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
     {
       id: 'altglas',
       label: 'Altglas',
-      color: '#14b8a6', // Teal
+      color: '#14b8a6',
       nextPickupDate: getRelativeDateISO(3),
       reminderEveningBefore: false,
       assignedTo: 'member-a',
@@ -151,7 +155,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
       title: 'Klo reinigen',
       description: 'WC, Waschbecken & Spiegel gründlich putzen',
       intervalDays: 7,
-      lastCompletedAt: getRelativeDateISO(-7), // Due today!
+      lastCompletedAt: getRelativeDateISO(-7),
       assignedTo: 'member-a',
       rotationOrder: ['member-a', 'member-b'],
       estimatedMinutes: 20,
@@ -161,7 +165,7 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
       title: 'Saugen & nass wischen',
       description: 'Alle Wohnräume saugen und Hartböden feucht wischen',
       intervalDays: 7,
-      lastCompletedAt: getRelativeDateISO(-8), // 1 day overdue -> Due today!
+      lastCompletedAt: getRelativeDateISO(-8),
       assignedTo: 'member-b',
       rotationOrder: ['member-a', 'member-b'],
       estimatedMinutes: 45,
@@ -171,10 +175,63 @@ export const INITIAL_HOUSEHOLD_STATE: HouseholdState = {
       title: 'Fenster putzen',
       description: 'Wohnzimmer-, Schlafzimmer- und Küchenfenster streifenfrei reinigen',
       intervalDays: 30,
-      lastCompletedAt: getRelativeDateISO(-26), // Due in 4 days
+      lastCompletedAt: getRelativeDateISO(-26),
       assignedTo: 'member-a',
       rotationOrder: ['member-a', 'member-b'],
       estimatedMinutes: 60,
+    },
+  ],
+
+  activityLog: [
+    {
+      id: 'log-1',
+      title: 'Spülmaschine ausgeräumt',
+      category: 'dishwasher',
+      completedBy: 'member-b',
+      completedByName: 'Alex',
+      completedByAvatar: '👩‍🚀',
+      timestamp: getRelativeTimestampISO(-2),
+      xpPoints: 15,
+    },
+    {
+      id: 'log-2',
+      title: 'Helle Wäsche aufgehängt',
+      category: 'laundry',
+      completedBy: 'member-a',
+      completedByName: 'Maddin',
+      completedByAvatar: '🧑‍🚀',
+      timestamp: getRelativeTimestampISO(-5),
+      xpPoints: 20,
+    },
+    {
+      id: 'log-3',
+      title: 'Dunkle Wäsche gestartet',
+      category: 'laundry',
+      completedBy: 'member-b',
+      completedByName: 'Alex',
+      completedByAvatar: '👩‍🚀',
+      timestamp: getRelativeTimestampISO(-12),
+      xpPoints: 10,
+    },
+    {
+      id: 'log-4',
+      title: 'Altglas weggebracht',
+      category: 'waste',
+      completedBy: 'member-a',
+      completedByName: 'Maddin',
+      completedByAvatar: '🧑‍🚀',
+      timestamp: getRelativeTimestampISO(-28),
+      xpPoints: 25,
+    },
+    {
+      id: 'log-5',
+      title: 'Klo gereinigt',
+      category: 'chore',
+      completedBy: 'member-b',
+      completedByName: 'Alex',
+      completedByAvatar: '👩‍🚀',
+      timestamp: getRelativeTimestampISO(-72),
+      xpPoints: 30,
     },
   ],
 }
