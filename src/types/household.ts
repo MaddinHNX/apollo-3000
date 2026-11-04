@@ -123,6 +123,7 @@ export type NavigationTab = 'dashboard' | 'week' | 'laundry' | 'waste' | 'schedu
 export interface HouseholdState {
   householdId: string
   householdName: string
+  googleCalendarUrl?: string // Optionaler Webcal/.ics Link oder Kalender-ID
   members: HouseholdMember[]
   activeMemberId: MemberId
   dishwasher: DishwasherState

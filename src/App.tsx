@@ -322,6 +322,137 @@ export function App() {
     }))
   }
 
+  // Google Kalender URL speichern
+  const handleSaveCalendarUrl = (calendarUrl: string) => {
+    updateStateAndSync((prev) => ({
+      ...prev,
+      googleCalendarUrl: calendarUrl,
+    }))
+  }
+
+  // Haushalt bei Null starten (Alle Dummy-Tasks leeren und Namen übernehmen)
+  const handleResetHouseholdToZero = (
+    newHouseholdName: string,
+    memberAName: string,
+    memberBName: string
+  ) => {
+    const cleanHouseholdId =
+      newHouseholdName
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-') +
+      '-' +
+      Math.floor(1000 + Math.random() * 9000)
+
+    const freshState: HouseholdState = {
+      householdId: cleanHouseholdId,
+      householdName: newHouseholdName.trim() || 'Unser Haushalt',
+      googleCalendarUrl: '',
+      members: [
+        {
+          id: 'member-a',
+          name: memberAName.trim() || 'Person A',
+          color: '#6366f1',
+          avatar: '🧑‍🚀',
+          roleLabel: 'Person A',
+        },
+        {
+          id: 'member-b',
+          name: memberBName.trim() || 'Person B',
+          color: '#ec4899',
+          avatar: '👩‍🚀',
+          roleLabel: 'Person B',
+        },
+      ],
+      activeMemberId: 'member-a',
+      dishwasher: {
+        status: 'empty',
+        lastHandledBy: 'member-a',
+        updatedAt: new Date().toISOString(),
+        xpReward: 15,
+      },
+      laundry: [
+        {
+          id: 'hell',
+          label: 'Helle Wäsche',
+          temperature: '30°/40°',
+          iconName: 'Sun',
+          stage: 'idle',
+          startedAt: null,
+          assignedTo: null,
+          xpReward: 20,
+        },
+        {
+          id: 'dunkel',
+          label: 'Dunkle Wäsche',
+          temperature: '30°/40°',
+          iconName: 'Moon',
+          stage: 'idle',
+          startedAt: null,
+          assignedTo: null,
+          xpReward: 20,
+        },
+        {
+          id: 'bunt',
+          label: 'Buntwäsche',
+          temperature: '30°/40°',
+          iconName: 'Palette',
+          stage: 'idle',
+          startedAt: null,
+          assignedTo: null,
+          xpReward: 20,
+        },
+        {
+          id: '60_bettwaesche',
+          label: '60° Bettwäsche',
+          temperature: '60°',
+          iconName: 'BedDouble',
+          stage: 'idle',
+          startedAt: null,
+          assignedTo: null,
+          xpReward: 35,
+        },
+        {
+          id: '60_unterwaesche',
+          label: '60° Unterwäsche',
+          temperature: '60°',
+          iconName: 'Shirt',
+          stage: 'idle',
+          startedAt: null,
+          assignedTo: null,
+          xpReward: 20,
+        },
+        {
+          id: '60_geschirrtuecher',
+          label: '60° Geschirrtücher',
+          temperature: '60°',
+          iconName: 'Sparkles',
+          stage: 'idle',
+          startedAt: null,
+          assignedTo: null,
+          xpReward: 20,
+        },
+      ],
+      waste: [],
+      chores: [],
+      activityLog: [
+        {
+          id: `log-${Date.now()}`,
+          title: `Neuer Haushalt "${newHouseholdName}" gestartet!`,
+          category: 'chore',
+          completedBy: 'member-a',
+          completedByName: memberAName.trim() || 'Person A',
+          completedByAvatar: '🧑‍🚀',
+          timestamp: new Date().toISOString(),
+          xpPoints: 50,
+        },
+      ],
+    }
+
+    localStorage.removeItem(STORAGE_KEY)
+    updateStateAndSync(() => freshState)
+  }
+
   const handleResetDemo = () => {
     localStorage.removeItem(STORAGE_KEY)
     setState(INITIAL_HOUSEHOLD_STATE)
@@ -636,6 +767,8 @@ export function App() {
         activeMember={activeMember}
         onUpdateHouseholdId={handleUpdateHouseholdId}
         onGoogleUserConnected={handleGoogleUserConnected}
+        onSaveCalendarUrl={handleSaveCalendarUrl}
+        onResetHouseholdToZero={handleResetHouseholdToZero}
       />
 
       {/* Chore & XP Settings Modal */}
