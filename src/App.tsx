@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 import {
   Calendar,
   Check,
-  Flame,
   LogIn,
   RefreshCcw,
   Sparkles,
 } from 'lucide-react'
+import maidIcon from './assets/icon-maid.jpg'
 import { HouseholdAuthModal } from './components/auth/HouseholdAuthModal'
 import { DishwasherQuickToggle } from './components/dashboard/DishwasherQuickToggle'
 import { PersonDetailModal } from './components/dashboard/PersonDetailModal'
@@ -497,8 +497,12 @@ export function App() {
             {/* Obere Leiste: Apollo 3000 + Haushaltsname & Einloggen-Button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-black bg-gradient-to-tr from-amber-400 to-rose-500 text-black comic-shadow-sm">
-                  <Flame className="h-6 w-6 stroke-[2.5]" />
+                <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border-2 border-black bg-amber-400 comic-shadow-sm">
+                  <img
+                    src={maidIcon}
+                    alt="Apollo 3000 Comic Putzfrau"
+                    className="h-full w-full object-cover"
+                  />
                 </div>
                 <div>
                   <h1 className="font-comic text-2xl tracking-wider text-slate-900 leading-none">

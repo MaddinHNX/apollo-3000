@@ -10,22 +10,22 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['icon-maid.jpg', 'favicon.svg'],
       manifest: {
         name: 'Apollo 3000 – Haushalts-Management',
         short_name: 'Apollo 3000',
         description: 'Smartes Haushalts-Management für 2 Personen (Spülmaschine, Wäsche, Müll & Wochenplan)',
-        theme_color: '#0f172a',
-        background_color: '#020617',
+        theme_color: '#f7e6bb',
+        background_color: '#f7e6bb',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',
         scope: '/',
         icons: [
           {
-            src: '/favicon.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
+            src: '/icon-maid.jpg',
+            sizes: '512x512',
+            type: 'image/jpeg',
             purpose: 'any maskable',
           },
         ],
