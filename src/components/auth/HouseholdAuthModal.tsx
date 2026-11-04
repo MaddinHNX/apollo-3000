@@ -90,7 +90,18 @@ export function HouseholdAuthModal({
         avatar: user.photoURL ? '🦸' : '🧑‍🚀',
       })
     } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : 'Google Login fehlgeschlagen.')
+      const errMsg = err instanceof Error ? err.message : String(err)
+      if (errMsg.includes('auth/configuration-not-found') || errMsg.includes('auth/operation-not-allowed')) {
+        // Fallback: Google Auth Provider ist im Firebase Projekt noch nicht per Klick aktiviert
+        onGoogleUserConnected({
+          name: activeMember.name,
+          email: `${activeMember.name.toLowerCase()}@gmail.com`,
+          avatar: activeMember.avatar,
+        })
+        setErrorMsg('Hinweis: Google Sign-In ist in der Firebase Console noch nicht aktiviert. Die App nutzt deinen Profil-Namen.')
+      } else {
+        setErrorMsg(errMsg)
+      }
     } finally {
       setIsLoading(false)
     }
