@@ -594,6 +594,7 @@ export function App() {
               <TodayChoresList
                 chores={state.chores}
                 members={state.members}
+                calendarEmail={state.googleCalendarUrl}
                 onCompleteChore={handleCompleteChore}
               />
 
@@ -752,6 +753,7 @@ export function App() {
               <TodayChoresList
                 chores={state.chores}
                 members={state.members}
+                calendarEmail={state.googleCalendarUrl}
                 onCompleteChore={handleCompleteChore}
               />
 

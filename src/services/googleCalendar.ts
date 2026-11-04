@@ -13,9 +13,13 @@ const STORAGE_CALENDAR_TOKEN_KEY = 'apollo3000_gcal_access_token'
 
 export class GoogleCalendarService {
   /**
-   * Generates a 1-click Google Calendar Web Intent Link (works on mobile & desktop without OAuth setup)
+   * Generates a 1-click Google Calendar Web Intent Link targeted to a specific calendar (e.g. schorleweg@gmail.com)
    */
-  static createWebIntentUrl(chore: StandardChore, assigneeName: string): string {
+  static createWebIntentUrl(
+    chore: StandardChore,
+    assigneeName: string,
+    calendarEmail?: string
+  ): string {
     const today = new Date()
     const targetDate = new Date(today)
     targetDate.setHours(10, 0, 0, 0)
@@ -30,12 +34,13 @@ export class GoogleCalendarService {
     )
     const dates = `${startISO}/${endISO}`
 
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&dates=${dates}`
+    let url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&dates=${dates}`
+    if (calendarEmail && calendarEmail.includes('@')) {
+      url += `&src=${encodeURIComponent(calendarEmail)}`
+    }
+    return url
   }
 
-  /**
-   * Stores an OAuth Access Token for direct REST API calls
-   */
   static saveAccessToken(token: string): void {
     localStorage.setItem(STORAGE_CALENDAR_TOKEN_KEY, token)
   }
@@ -48,13 +53,11 @@ export class GoogleCalendarService {
     localStorage.removeItem(STORAGE_CALENDAR_TOKEN_KEY)
   }
 
-  /**
-   * Adds an event directly to Google Calendar via REST API if an OAuth access token is present
-   */
   static async addEventToGoogleCalendar(
     token: string,
     chore: StandardChore,
-    assigneeName: string
+    assigneeName: string,
+    calendarId: string = 'primary'
   ): Promise<{ success: boolean; eventLink?: string; error?: string }> {
     try {
       const now = new Date()
@@ -82,7 +85,7 @@ export class GoogleCalendarService {
       }
 
       const response = await fetch(
-        'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`,
         {
           method: 'POST',
           headers: {

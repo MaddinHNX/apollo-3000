@@ -13,6 +13,7 @@ import type { HouseholdMember, StandardChore } from '../../types/household'
 interface TodayChoresListProps {
   chores: StandardChore[]
   members: HouseholdMember[]
+  calendarEmail?: string
   onCompleteChore: (choreId: string) => void
 }
 
@@ -57,6 +58,7 @@ export function getChoreDueInfo(chore: StandardChore): {
 export function TodayChoresList({
   chores,
   members,
+  calendarEmail,
   onCompleteChore,
 }: TodayChoresListProps) {
   const [swipedChoreId, setSwipedChoreId] = useState<string | null>(null)
@@ -69,7 +71,11 @@ export function TodayChoresList({
   const handleOpenGoogleCalendar = (chore: StandardChore) => {
     const assignee = members.find((m) => m.id === chore.assignedTo)
     const assigneeName = assignee ? assignee.name : 'Haushalt'
-    const intentUrl = GoogleCalendarService.createWebIntentUrl(chore, assigneeName)
+    const intentUrl = GoogleCalendarService.createWebIntentUrl(
+      chore,
+      assigneeName,
+      calendarEmail
+    )
     window.open(intentUrl, '_blank', 'noopener,noreferrer')
   }
 
