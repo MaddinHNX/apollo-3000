@@ -2,15 +2,14 @@ import { useEffect, useState } from 'react'
 import {
   Calendar,
   Check,
-  ExternalLink,
   Flame,
+  LogIn,
   RefreshCcw,
   Sparkles,
-  Users,
-  Zap,
 } from 'lucide-react'
 import { HouseholdAuthModal } from './components/auth/HouseholdAuthModal'
 import { DishwasherQuickToggle } from './components/dashboard/DishwasherQuickToggle'
+import { PersonDetailModal } from './components/dashboard/PersonDetailModal'
 import {
   TodayChoresList,
   getChoreDueInfo,
@@ -24,6 +23,7 @@ import { isFirebaseConfigured, subscribeToHousehold, syncHouseholdState } from '
 import { INITIAL_HOUSEHOLD_STATE } from './data/mockData'
 import type {
   DishwasherStatus,
+  HouseholdMember,
   HouseholdState,
   LaundryStage,
   LaundryType,
@@ -66,6 +66,7 @@ export function App() {
   const [activeTab, setActiveTab] = useState<NavigationTab>('dashboard')
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [isChoreSettingsOpen, setIsChoreSettingsOpen] = useState(false)
+  const [inspectingMember, setInspectingMember] = useState<HouseholdMember | null>(null)
   const [simulateEveningAlert, setSimulateEveningAlert] = useState<boolean>(
     () => new Date().getHours() >= 18
   )
@@ -350,48 +351,72 @@ export function App() {
       <div className="mx-auto flex min-h-dvh max-w-[430px] flex-col px-4 pb-28 pt-safe">
         {/* Vintage Comic Header */}
         <header className="sticky top-0 z-30 -mx-4 mb-4 border-b-3 border-black bg-[#1b1009]/95 px-4 py-3 backdrop-blur-xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-black bg-gradient-to-tr from-amber-400 to-rose-500 text-black comic-shadow-sm">
-                <Flame className="h-6 w-6 stroke-[2.5]" />
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <h1 className="font-comic text-2xl tracking-wider text-amber-300">
+          <div className="flex flex-col gap-2.5">
+            {/* Obere Leiste: Apollo 3000 + Haushaltsname & Einloggen-Button */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-black bg-gradient-to-tr from-amber-400 to-rose-500 text-black comic-shadow-sm">
+                  <Flame className="h-6 w-6 stroke-[2.5]" />
+                </div>
+                <div>
+                  <h1 className="font-comic text-2xl tracking-wider text-amber-300 leading-none">
                     APOLLO 3000
                   </h1>
-                  <button
-                    type="button"
-                    onClick={() => setIsAuthModalOpen(true)}
-                    className="inline-flex items-center gap-1 rounded-md border border-black bg-rose-500 px-1.5 py-0.2 font-comic text-[10px] uppercase text-white comic-shadow-sm transition hover:bg-rose-400"
-                  >
-                    <Users className="h-2.5 w-2.5 stroke-[2.5]" />
-                    <span>{state.householdId}</span>
-                  </button>
+                  <span className="font-comic text-xs uppercase text-amber-100/80">
+                    {state.householdName}
+                  </span>
                 </div>
-                <p className="text-[11px] font-semibold text-amber-200/70">
-                  {state.householdName}
-                </p>
               </div>
+
+              {/* Einloggen-Button */}
+              <button
+                type="button"
+                onClick={() => setIsAuthModalOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-xl border-2 border-black bg-rose-500 px-3 py-1.5 font-comic text-xs uppercase text-white comic-shadow-sm transition hover:bg-rose-400 active:translate-y-0.5"
+              >
+                <LogIn className="h-3.5 w-3.5 stroke-[2.5]" />
+                <span>Einloggen</span>
+              </button>
             </div>
 
-            {/* Member Switcher */}
-            <div className="flex items-center gap-1 rounded-2xl border-2 border-black bg-[#100905] p-1 comic-shadow-sm">
+            {/* Untere Leiste: Name und Icons der Personen (Klick öffnet Wochenübersicht dieser Person) */}
+            <div className="flex items-center gap-2 rounded-2xl border-2 border-black bg-[#100905] p-1.5 comic-shadow-sm">
               {state.members.map((member) => {
                 const isSelected = member.id === activeMember.id
+                const openCount = state.chores.filter(
+                  (c) => c.assignedTo === member.id
+                ).length
+
                 return (
                   <button
                     key={member.id}
                     type="button"
-                    onClick={() => handleSelectMember(member.id)}
-                    className={`flex items-center gap-1 rounded-xl px-2 py-1 font-comic text-xs uppercase tracking-wide transition ${
+                    title={`${member.name}s Aufgaben & Erledigungen ansehen`}
+                    onClick={() => {
+                      handleSelectMember(member.id)
+                      setInspectingMember(member)
+                    }}
+                    className={`flex flex-1 items-center justify-between gap-1.5 rounded-xl px-2.5 py-1.5 transition ${
                       isSelected
-                        ? 'border border-black bg-amber-400 text-black font-bold comic-shadow-sm'
-                        : 'text-amber-200/50 hover:text-amber-100'
+                        ? 'border border-black bg-amber-400 text-black comic-shadow-sm font-bold'
+                        : 'bg-[#1c0f08] text-amber-100/70 hover:bg-[#27140a]'
                     }`}
                   >
-                    <span>{member.avatar}</span>
-                    <span>{member.name}</span>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-lg">{member.avatar}</span>
+                      <span className="font-comic text-xs uppercase tracking-wide truncate">
+                        {member.name}
+                      </span>
+                    </div>
+                    <span
+                      className={`rounded-md px-1.5 py-0.2 font-comic text-[10px] ${
+                        isSelected
+                          ? 'bg-black text-amber-300'
+                          : 'bg-black/50 text-amber-200/60'
+                      }`}
+                    >
+                      {openCount} Tasks
+                    </span>
                   </button>
                 )
               })}
@@ -403,25 +428,6 @@ export function App() {
         <main className="flex-1 space-y-4">
           {activeTab === 'dashboard' && (
             <>
-              {/* Figma Board Link */}
-              <div className="flex items-center justify-between rounded-2xl border-2 border-black bg-amber-400/15 p-3 comic-shadow-sm">
-                <div className="flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-amber-400 stroke-[2.5]" />
-                  <span className="font-comic text-xs uppercase tracking-wide text-amber-300">
-                    Vintage Pop-Art Design Board
-                  </span>
-                </div>
-                <a
-                  href="https://www.figma.com/design/yGBQ4VkH5lbOjLPAIRHEyX"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 rounded-lg border border-black bg-amber-400 px-2 py-0.5 font-comic text-[11px] uppercase text-black"
-                >
-                  <span>Figma</span>
-                  <ExternalLink className="h-2.5 w-2.5" />
-                </a>
-              </div>
-
               <WasteAlertBanner
                 wasteItems={state.waste}
                 members={state.members}
@@ -640,6 +646,17 @@ export function App() {
         onSaveChore={handleSaveChore}
         onDeleteChore={handleDeleteChore}
       />
+
+      {/* Person Detail & Weekly Progress Modal */}
+      {inspectingMember && (
+        <PersonDetailModal
+          isOpen={Boolean(inspectingMember)}
+          onClose={() => setInspectingMember(null)}
+          member={inspectingMember}
+          state={state}
+          onCompleteChore={handleCompleteChore}
+        />
+      )}
 
       {/* Fixed Mobile Bottom Navigation mit Wochen-Tab */}
       <BottomNav
