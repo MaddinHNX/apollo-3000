@@ -43,7 +43,7 @@ export function WasteAlertBanner({
   return (
     <section
       aria-label="Müll-Erinnerung"
-      className="relative overflow-hidden rounded-3xl border-3 border-black bg-[#2d1209] p-4 comic-shadow"
+      className="relative overflow-hidden rounded-3xl border-3 border-black bg-white p-4 comic-shadow"
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
@@ -52,13 +52,13 @@ export function WasteAlertBanner({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-comic text-base tracking-wide text-amber-300 uppercase">
+              <h3 className="font-comic text-base tracking-wide text-rose-600 uppercase">
                 {isEveningWindow
                   ? '⚡ VORABEND-ALARM (18:00+) ⚡'
                   : 'MORGEN ABHOLUNG!'}
               </h3>
             </div>
-            <p className="text-xs font-medium text-amber-100/80">
+            <p className="text-xs font-medium text-slate-600">
               {isEveningWindow
                 ? 'Jetzt an die Straße stellen!'
                 : 'Erinnerung am Vorabend aktiv'}
@@ -69,7 +69,7 @@ export function WasteAlertBanner({
         <button
           type="button"
           onClick={onToggleSimulateEvening}
-          className="inline-flex items-center gap-1 rounded-xl border-2 border-black bg-[#1f0d06] px-2.5 py-1 font-comic text-xs uppercase text-amber-300 transition hover:bg-black active:translate-y-0.5"
+          className="inline-flex items-center gap-1 rounded-xl border-2 border-black bg-amber-100 px-2.5 py-1 font-comic text-xs uppercase text-slate-800 transition hover:bg-amber-200 active:translate-y-0.5"
         >
           <Clock className="h-3 w-3" />
           <span>18:00 {simulateEveningAlert ? 'An' : 'Test'}</span>
@@ -84,7 +84,7 @@ export function WasteAlertBanner({
           return (
             <div
               key={item.id}
-              className="flex items-center justify-between gap-2 rounded-2xl border-2 border-black bg-[#1a0a04] p-3 comic-shadow-sm"
+              className="flex items-center justify-between gap-2 rounded-2xl border-2 border-black bg-amber-50/80 p-3 comic-shadow-sm"
             >
               <div className="flex items-center gap-2.5">
                 <span
@@ -93,14 +93,14 @@ export function WasteAlertBanner({
                 />
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-comic text-lg text-white">
+                    <span className="font-comic text-lg text-slate-900">
                       {item.label}
                     </span>
-                    <span className="rounded-md border border-black bg-amber-400 px-1.5 py-0.5 font-comic text-xs text-black">
+                    <span className="rounded-md border border-black bg-amber-400 px-1.5 py-0.5 font-comic text-xs text-black font-bold">
                       {days === 0 ? 'HEUTE' : 'MORGEN FRÜH'}
                     </span>
                   </div>
-                  <p className="text-[11px] text-amber-100/70">
+                  <p className="text-[11px] text-slate-600">
                     {item.notes}
                     {assignee ? ` · ${assignee.avatar} ${assignee.name}` : ''}
                   </p>

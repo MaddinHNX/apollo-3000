@@ -476,12 +476,23 @@ export function App() {
     return diff >= 0 && diff <= 1
   }).length
 
+  // Dynamischer Comic-Hintergrund je nach aktivem Tab (wie die Pop-Art Comic Panels)
+  const tabBackgroundClass: Record<NavigationTab, string> = {
+    dashboard: 'comic-sunburst-amber', // Warmes Pop-Art Gelb / Strahlen (wie Chers & Superman)
+    week: 'comic-sunburst-rose',       // Kräftiges Pop-Art Rosa / Strahlen
+    laundry: 'comic-sunburst-sky',     // Frisches Comic Hellblau / Strahlen
+    waste: 'comic-sunburst-green',     // Pop-Art Mintgrün / Strahlen
+    schedule: 'comic-sunburst-teal',   // Vintage Retro Türkis / Strahlen (wie Sugar Taste Panel)
+  }
+
   return (
-    <div className="min-h-dvh bg-[#150e09] text-[#fffdf5] comic-dots">
+    <div
+      className={`min-h-dvh transition-colors duration-300 ${tabBackgroundClass[activeTab]} text-slate-900 comic-halftone-dots`}
+    >
       {/* Mobile-First Container (390px Viewport) */}
       <div className="mx-auto flex min-h-dvh max-w-[430px] flex-col px-4 pb-28 pt-safe">
         {/* Vintage Comic Header */}
-        <header className="sticky top-0 z-30 -mx-4 mb-4 border-b-3 border-black bg-[#1b1009]/95 px-4 py-3 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 -mx-4 mb-4 border-b-3 border-black bg-white/95 px-4 py-3 backdrop-blur-xl shadow-sm">
           <div className="flex flex-col gap-2.5">
             {/* Obere Leiste: Apollo 3000 + Haushaltsname & Einloggen-Button */}
             <div className="flex items-center justify-between">
@@ -490,10 +501,10 @@ export function App() {
                   <Flame className="h-6 w-6 stroke-[2.5]" />
                 </div>
                 <div>
-                  <h1 className="font-comic text-2xl tracking-wider text-amber-300 leading-none">
+                  <h1 className="font-comic text-2xl tracking-wider text-slate-900 leading-none">
                     APOLLO 3000
                   </h1>
-                  <span className="font-comic text-xs uppercase text-amber-100/80">
+                  <span className="font-comic text-xs uppercase text-slate-600">
                     {state.householdName}
                   </span>
                 </div>
@@ -503,7 +514,7 @@ export function App() {
               <button
                 type="button"
                 onClick={() => setIsAuthModalOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-xl border-2 border-black bg-rose-500 px-3 py-1.5 font-comic text-xs uppercase text-white comic-shadow-sm transition hover:bg-rose-400 active:translate-y-0.5"
+                className="inline-flex items-center gap-1.5 rounded-xl border-2 border-black bg-rose-500 px-3 py-1.5 font-comic text-xs uppercase text-white comic-shadow-sm transition hover:bg-rose-600 active:translate-y-0.5 font-bold"
               >
                 <LogIn className="h-3.5 w-3.5 stroke-[2.5]" />
                 <span>Einloggen</span>
@@ -511,7 +522,7 @@ export function App() {
             </div>
 
             {/* Untere Leiste: Name und Icons der Personen (Klick öffnet Wochenübersicht dieser Person) */}
-            <div className="flex items-center gap-2 rounded-2xl border-2 border-black bg-[#100905] p-1.5 comic-shadow-sm">
+            <div className="flex items-center gap-2 rounded-2xl border-2 border-black bg-amber-50 p-1.5 comic-shadow-sm">
               {state.members.map((member) => {
                 const isSelected = member.id === activeMember.id
                 const openCount = state.chores.filter(
@@ -530,7 +541,7 @@ export function App() {
                     className={`flex flex-1 items-center justify-between gap-1.5 rounded-xl px-2.5 py-1.5 transition ${
                       isSelected
                         ? 'border border-black bg-amber-400 text-black comic-shadow-sm font-bold'
-                        : 'bg-[#1c0f08] text-amber-100/70 hover:bg-[#27140a]'
+                        : 'bg-white/80 text-slate-700 hover:bg-white'
                     }`}
                   >
                     <div className="flex items-center gap-1.5 min-w-0">
@@ -543,7 +554,7 @@ export function App() {
                       className={`rounded-md px-1.5 py-0.2 font-comic text-[10px] ${
                         isSelected
                           ? 'bg-black text-amber-300'
-                          : 'bg-black/50 text-amber-200/60'
+                          : 'bg-slate-200 text-slate-700'
                       }`}
                     >
                       {openCount} Tasks
@@ -583,20 +594,20 @@ export function App() {
               />
 
               {/* Weekly Dashboard Teaser */}
-              <section className="rounded-3xl border-3 border-black bg-[#22150d] p-4 comic-shadow">
+              <section className="rounded-3xl border-3 border-black bg-white p-4 comic-shadow">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="font-comic text-lg uppercase tracking-wide text-white">
+                    <h2 className="font-comic text-lg uppercase tracking-wide text-slate-900">
                       Wochen-Dashboard
                     </h2>
-                    <p className="text-xs text-amber-100/70">
+                    <p className="text-xs text-slate-600">
                       {state.activityLog.length} Erledigungen diese Woche
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setActiveTab('week')}
-                    className="rounded-2xl border-2 border-black bg-amber-400 px-3.5 py-1.5 font-comic text-xs uppercase text-black comic-shadow-sm hover:bg-amber-300"
+                    className="rounded-2xl border-2 border-black bg-amber-400 px-3.5 py-1.5 font-comic text-xs uppercase text-black comic-shadow-sm hover:bg-amber-300 font-bold"
                   >
                     Zur Übersicht →
                   </button>
@@ -625,14 +636,14 @@ export function App() {
 
           {activeTab === 'waste' && (
             <section className="space-y-3">
-              <div className="rounded-3xl border-3 border-black bg-[#24150b] p-4 comic-shadow">
-                <span className="font-comic text-xs uppercase tracking-wider text-amber-400">
+              <div className="rounded-3xl border-3 border-black bg-white p-4 comic-shadow">
+                <span className="font-comic text-xs uppercase tracking-wider text-emerald-600">
                   MÜLL-MISSIONEN
                 </span>
-                <h2 className="font-comic text-2xl uppercase tracking-wide text-white">
+                <h2 className="font-comic text-2xl uppercase tracking-wide text-slate-900 leading-tight">
                   5 Fraktionen
                 </h2>
-                <p className="text-xs text-amber-100/70">
+                <p className="text-xs text-slate-600">
                   Vorabend-Alarmierung automatisch ab 18:00 Uhr
                 </p>
               </div>
@@ -644,7 +655,7 @@ export function App() {
                 return (
                   <div
                     key={item.id}
-                    className="rounded-3xl border-3 border-black bg-[#1f1007] p-4 comic-shadow"
+                    className="rounded-3xl border-3 border-black bg-white p-4 comic-shadow"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
@@ -653,22 +664,22 @@ export function App() {
                           style={{ backgroundColor: item.color }}
                         />
                         <div>
-                          <h3 className="font-comic text-xl uppercase tracking-wide text-white">
+                          <h3 className="font-comic text-xl uppercase tracking-wide text-slate-900">
                             {item.label}
                           </h3>
-                          <p className="text-xs text-amber-100/70">{item.notes}</p>
+                          <p className="text-xs text-slate-600">{item.notes}</p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="mt-3.5 flex items-center justify-between border-t-2 border-black/80 pt-3 text-xs">
-                      <div className="flex items-center gap-2 text-amber-200">
-                        <Calendar className="h-3.5 w-3.5 text-amber-400" />
+                    <div className="mt-3.5 flex items-center justify-between border-t-2 border-slate-100 pt-3 text-xs">
+                      <div className="flex items-center gap-2 text-slate-700">
+                        <Calendar className="h-3.5 w-3.5 text-amber-600" />
                         <span>
                           Abholung: <strong>{item.nextPickupDate}</strong>
                         </span>
                         {assignee && (
-                          <span className="text-amber-300/80">
+                          <span className="text-slate-500">
                             · {assignee.avatar} {assignee.name}
                           </span>
                         )}
@@ -677,7 +688,7 @@ export function App() {
                       <button
                         type="button"
                         onClick={() => handleMarkWastePutOut(item.id)}
-                        className="inline-flex items-center gap-1 rounded-xl border-2 border-black bg-emerald-400 px-3 py-1.5 font-comic text-xs uppercase text-black comic-shadow-sm hover:bg-emerald-300"
+                        className="inline-flex items-center gap-1 rounded-xl border-2 border-black bg-emerald-400 px-3 py-1.5 font-comic text-xs uppercase text-black comic-shadow-sm hover:bg-emerald-300 font-bold"
                       >
                         <Check className="h-3 w-3 stroke-[3]" />
                         <span>Fertig (+14 Tg.)</span>
@@ -691,14 +702,14 @@ export function App() {
 
           {activeTab === 'schedule' && (
             <section className="space-y-4">
-              <div className="rounded-3xl border-3 border-black bg-[#28150c] p-4 comic-shadow">
-                <span className="font-comic text-xs uppercase tracking-wider text-rose-400">
+              <div className="rounded-3xl border-3 border-black bg-white p-4 comic-shadow">
+                <span className="font-comic text-xs uppercase tracking-wider text-rose-600">
                   TEAM-FAIRNESS
                 </span>
-                <h2 className="font-comic text-2xl uppercase tracking-wide text-white">
+                <h2 className="font-comic text-2xl uppercase tracking-wide text-slate-900 leading-tight">
                   A/B-Rotation
                 </h2>
-                <p className="text-xs text-amber-100/70">
+                <p className="text-xs text-slate-600">
                   Gerechte Verteilung für {state.members[0]?.name} &amp;{' '}
                   {state.members[1]?.name}
                 </p>
@@ -712,20 +723,20 @@ export function App() {
                     return (
                       <div
                         key={m.id}
-                        className="rounded-2xl border-2 border-black bg-[#160c07] p-3 comic-shadow-sm"
+                        className="rounded-2xl border-2 border-black bg-amber-50 p-3 comic-shadow-sm"
                       >
                         <div className="flex items-center gap-2">
                           <span className="text-2xl">{m.avatar}</span>
                           <div>
-                            <div className="font-comic text-base text-amber-300">
+                            <div className="font-comic text-base text-slate-900">
                               {m.name}
                             </div>
-                            <div className="text-[10px] font-semibold text-amber-200/50">
+                            <div className="text-[10px] font-semibold text-slate-500">
                               {m.roleLabel}
                             </div>
                           </div>
                         </div>
-                        <div className="mt-2 text-xs font-semibold text-amber-100/80">
+                        <div className="mt-2 text-xs font-semibold text-slate-700">
                           Aufgaben: {assignedChores}
                         </div>
                       </div>
@@ -740,15 +751,15 @@ export function App() {
                 onCompleteChore={handleCompleteChore}
               />
 
-              <div className="flex items-center justify-between rounded-2xl border-2 border-black bg-[#1c0f08] px-4 py-3 text-xs text-amber-200/70 comic-shadow-sm">
+              <div className="flex items-center justify-between rounded-2xl border-2 border-black bg-white px-4 py-3 text-xs text-slate-600 comic-shadow-sm">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-amber-400" />
+                  <Sparkles className="h-4 w-4 text-amber-500" />
                   <span>Demo-Zustand zurücksetzen</span>
                 </div>
                 <button
                   type="button"
                   onClick={handleResetDemo}
-                  className="inline-flex items-center gap-1 rounded-xl border border-black bg-amber-400 px-2.5 py-1 font-comic text-xs uppercase text-black"
+                  className="inline-flex items-center gap-1 rounded-xl border border-black bg-amber-400 px-2.5 py-1 font-comic text-xs uppercase text-black font-bold"
                 >
                   <RefreshCcw className="h-3 w-3" />
                   <span>Reset</span>

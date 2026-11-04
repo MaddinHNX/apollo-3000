@@ -35,20 +35,20 @@ const STATUS_META: Record<
     subline: string
     nextActionLabel: string
     badgeBg: string
-    badgeBorder: string
     bubbleBg: string
+    cardBg: string
     icon: typeof Sparkles
     spin?: boolean
   }
 > = {
   empty: {
     comicSpeechBubble: 'CLEAN!',
-    title: 'Leer & Glänzend!',
-    subline: 'Perfekt ausgeräumt – bereit für neues Geschirr',
+    title: 'Blitzblank & Leer!',
+    subline: 'Ausgeräumt – bereit für neues Geschirr',
     nextActionLabel: 'Beladen starten',
     badgeBg: 'bg-emerald-400 text-black',
-    badgeBorder: 'border-black',
-    bubbleBg: 'bg-[#22c55e] text-black',
+    bubbleBg: 'bg-emerald-300 text-black',
+    cardBg: 'bg-white',
     icon: CheckCircle2,
   },
   loading: {
@@ -57,29 +57,29 @@ const STATUS_META: Record<
     subline: 'Schmutziges Geschirr direkt hinein!',
     nextActionLabel: 'Maschine starten',
     badgeBg: 'bg-amber-300 text-black',
-    badgeBorder: 'border-black',
-    bubbleBg: 'bg-[#facc15] text-black',
+    bubbleBg: 'bg-amber-300 text-black',
+    cardBg: 'bg-white',
     icon: Utensils,
   },
   running: {
     comicSpeechBubble: 'WASHING!',
     title: 'Spült mit Volldampf!',
-    subline: 'Eco 50° läuft – bitte geschlossen halten',
+    subline: 'Eco-Programm läuft – bitte nicht öffnen',
     nextActionLabel: 'Als fertig markieren',
     badgeBg: 'bg-sky-400 text-black',
-    badgeBorder: 'border-black',
-    bubbleBg: 'bg-[#38bdf8] text-black',
+    bubbleBg: 'bg-sky-300 text-black',
+    cardBg: 'bg-white',
     icon: Zap,
     spin: true,
   },
   needs_unloading: {
-    comicSpeechBubble: 'DONE! UNLOAD!',
+    comicSpeechBubble: 'UNLOAD ME!',
     title: 'Fertig – Ausräumen!',
-    subline: 'Alles blitzblank und wartet auf dich',
+    subline: 'Alles glänzt und wartet auf dich',
     nextActionLabel: 'Ausgeräumt!',
     badgeBg: 'bg-rose-500 text-white',
-    badgeBorder: 'border-black',
-    bubbleBg: 'bg-[#ef4444] text-white',
+    bubbleBg: 'bg-rose-400 text-black',
+    cardBg: 'bg-rose-50/90',
     icon: AlertTriangle,
   },
 }
@@ -107,9 +107,8 @@ export function DishwasherQuickToggle({
   return (
     <section
       aria-label="Spülmaschinen-Status"
-      className="relative overflow-hidden rounded-3xl border-3 border-black bg-[#24170d] p-4 comic-shadow"
+      className={`relative overflow-hidden rounded-3xl border-3 border-black p-4 comic-shadow ${meta.cardBg}`}
     >
-      {/* Halftone / Comic Banner Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <div
@@ -120,30 +119,30 @@ export function DishwasherQuickToggle({
 
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-comic text-xs uppercase tracking-wider text-amber-400">
+              <span className="font-comic text-xs uppercase tracking-wider text-amber-700">
                 ★ SPÜLMASCHINE 3000 ★
               </span>
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-200/70">
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500">
                 <Clock className="h-3 w-3" />
                 {formatTimeAgo(dishwasher.updatedAt)}
               </span>
             </div>
-            <h2 className="font-comic text-2xl tracking-wide text-[#fffdf5]">
+            <h2 className="font-comic text-2xl tracking-wide text-slate-900 leading-tight">
               {meta.title}
             </h2>
-            <p className="text-xs font-medium text-amber-100/70">{meta.subline}</p>
+            <p className="text-xs font-medium text-slate-600">{meta.subline}</p>
           </div>
         </div>
 
         {/* Vintage Pop-Art Speech Bubble */}
         <div
-          className={`hidden sm:flex -rotate-3 rounded-2xl border-3 border-black px-3 py-1 font-comic text-sm font-bold uppercase comic-shadow-sm ${meta.bubbleBg}`}
+          className={`-rotate-3 rounded-2xl border-3 border-black px-3 py-1 font-comic text-sm font-bold uppercase comic-shadow-sm ${meta.bubbleBg}`}
         >
           {meta.comicSpeechBubble}
         </div>
       </div>
 
-      {/* Stepper Buttons mit Comic-Outlines */}
+      {/* Stepper Buttons */}
       <div className="mt-4 grid grid-cols-4 gap-2">
         {STATUS_ORDER.map((step) => {
           const isCurrent = dishwasher.status === step
@@ -161,7 +160,7 @@ export function DishwasherQuickToggle({
               className={`rounded-xl border-2 py-1.5 text-center font-comic text-sm tracking-wider transition-all duration-150 active:translate-y-0.5 ${
                 isCurrent
                   ? 'border-black bg-amber-400 text-black comic-shadow-sm font-bold -translate-y-0.5'
-                  : 'border-black/60 bg-[#160d07] text-amber-200/60 hover:bg-[#2b1b10] hover:text-amber-100'
+                  : 'border-slate-300 bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-black'
               }`}
             >
               {stepLabels[step]}
@@ -171,12 +170,12 @@ export function DishwasherQuickToggle({
       </div>
 
       {/* 1-Tap Big Comic Action Footer */}
-      <div className="mt-4 flex items-center justify-between border-t-2 border-black/80 pt-3">
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-200/80">
-          <Disc className="h-3.5 w-3.5 text-amber-400" />
+      <div className="mt-4 flex items-center justify-between border-t-2 border-slate-200 pt-3">
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+          <Disc className="h-3.5 w-3.5 text-amber-600" />
           <span>Zuletzt:</span>
           {handler ? (
-            <span className="inline-flex items-center gap-1 rounded-md border border-black bg-black/40 px-1.5 py-0.5 text-white">
+            <span className="inline-flex items-center gap-1 rounded-md border border-slate-300 bg-slate-100 px-1.5 py-0.5 text-slate-900">
               <span>{handler.avatar}</span>
               <span className="font-bold">{handler.name}</span>
             </span>
@@ -188,7 +187,7 @@ export function DishwasherQuickToggle({
         <button
           type="button"
           onClick={() => onCycleStatus()}
-          className="inline-flex items-center gap-2 rounded-2xl border-3 border-black bg-gradient-to-r from-amber-400 to-amber-500 px-4 py-2 font-comic text-sm uppercase tracking-wider text-black comic-shadow-sm transition hover:from-amber-300 hover:to-amber-400 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+          className="inline-flex items-center gap-2 rounded-2xl border-3 border-black bg-gradient-to-r from-amber-400 to-amber-500 px-4 py-2 font-comic text-sm uppercase tracking-wider text-black comic-shadow-sm transition hover:from-amber-300 hover:to-amber-400 active:translate-x-0.5 active:translate-y-0.5"
         >
           <RotateCw className="h-4 w-4 stroke-[3]" />
           <span>{meta.nextActionLabel}</span>

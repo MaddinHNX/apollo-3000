@@ -23,7 +23,7 @@ export function BottomNav({ activeTab, onSelectTab, badges = {} }: BottomNavProp
   return (
     <nav
       aria-label="Hauptnavigation"
-      className="fixed bottom-0 left-0 right-0 z-50 border-t-3 border-black bg-[#1b1009]/95 backdrop-blur-xl pb-safe"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t-3 border-black bg-white/95 backdrop-blur-xl pb-safe shadow-lg"
     >
       <div className="mx-auto flex max-w-[430px] items-center justify-around px-1 pt-2">
         {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
@@ -37,15 +37,15 @@ export function BottomNav({ activeTab, onSelectTab, badges = {} }: BottomNavProp
               onClick={() => onSelectTab(id)}
               className={`group relative flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-1.5 transition-all duration-150 ${
                 isActive
-                  ? 'text-amber-400'
-                  : 'text-amber-200/50 hover:text-amber-100 active:scale-95'
+                  ? 'text-black'
+                  : 'text-slate-500 hover:text-black active:scale-95'
               }`}
             >
               <div
                 className={`relative flex h-8 w-11 items-center justify-center rounded-2xl transition-all ${
                   isActive
                     ? 'border-2 border-black bg-amber-400 text-black comic-shadow-sm -translate-y-0.5'
-                    : 'group-hover:bg-black/30'
+                    : 'group-hover:bg-slate-100'
                 }`}
               >
                 <Icon
@@ -61,7 +61,7 @@ export function BottomNav({ activeTab, onSelectTab, badges = {} }: BottomNavProp
               </div>
               <span
                 className={`font-comic text-[11px] uppercase tracking-wider ${
-                  isActive ? 'text-amber-300 font-bold' : 'text-amber-200/50'
+                  isActive ? 'text-black font-bold' : 'text-slate-500'
                 }`}
               >
                 {label}

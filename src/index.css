@@ -14,31 +14,75 @@
     padding-right: env(safe-area-inset-right);
   }
 
-  /* Vintage Comic Halftone Ben-Day Dots Pattern */
-  .comic-dots {
-    background-image: radial-gradient(#1e140d 20%, transparent 20%), radial-gradient(#2b1e13 20%, transparent 20%);
-    background-color: #170f09;
-    background-position: 0 0, 8px 8px;
-    background-size: 16px 16px;
+  /* Authentic Comic Pop-Art Sunburst / Ray Backgrounds */
+  .comic-sunburst-amber {
+    background-color: #f7e6bb;
+    background-image: repeating-conic-gradient(
+      from 0deg,
+      #fef4d8 0deg 15deg,
+      #f1d798 15deg 30deg
+    );
   }
 
-  .comic-dots-light {
-    background-image: radial-gradient(#3a2617 15%, transparent 15%);
-    background-size: 12px 12px;
+  .comic-sunburst-teal {
+    background-color: #d1f2ec;
+    background-image: repeating-conic-gradient(
+      from 0deg,
+      #e8f8f5 0deg 15deg,
+      #b2ebe0 15deg 30deg
+    );
   }
 
-  /* Vintage Comic Hard Black Drop Shadow (Pop Art 3D Effect) */
+  .comic-sunburst-sky {
+    background-color: #dbeafe;
+    background-image: repeating-conic-gradient(
+      from 0deg,
+      #eff6ff 0deg 15deg,
+      #bfdbfe 15deg 30deg
+    );
+  }
+
+  .comic-sunburst-green {
+    background-color: #dcfce7;
+    background-image: repeating-conic-gradient(
+      from 0deg,
+      #f0fdf4 0deg 15deg,
+      #bbf7d0 15deg 30deg
+    );
+  }
+
+  .comic-sunburst-rose {
+    background-color: #ffe4e6;
+    background-image: repeating-conic-gradient(
+      from 0deg,
+      #fff1f2 0deg 15deg,
+      #fecdd3 15deg 30deg
+    );
+  }
+
+  /* Authentic Comic Halftone Dots (Light Ben-Day Dots) */
+  .comic-halftone-dots {
+    background-image: radial-gradient(rgba(0, 0, 0, 0.08) 18%, transparent 18%);
+    background-size: 10px 10px;
+  }
+
+  /* Crisper, bold Pop-Art Comic Shadows */
   .comic-shadow {
     box-shadow: 4px 4px 0px #000000;
   }
   .comic-shadow-sm {
-    box-shadow: 2.5px 2.5px 0px #000000;
+    box-shadow: 2px 2px 0px #000000;
   }
   .comic-shadow-lg {
     box-shadow: 6px 6px 0px #000000;
   }
-  .comic-shadow-amber {
-    box-shadow: 4px 4px 0px #eab308;
+  .comic-shadow-hover:hover {
+    box-shadow: 6px 6px 0px #000000;
+    transform: translate(-1px, -1px);
+  }
+  .comic-shadow-hover:active {
+    box-shadow: 1px 1px 0px #000000;
+    transform: translate(2px, 2px);
   }
 }
 
@@ -49,14 +93,14 @@
 body {
   margin: 0;
   font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
-  background-color: #150e09;
-  color: #fff9ed;
+  background-color: #f7e6bb;
+  color: #111827;
   overscroll-behavior-y: none;
 }
 
 .font-comic {
   font-family: 'Bangers', cursive, sans-serif;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 
 .font-marker {

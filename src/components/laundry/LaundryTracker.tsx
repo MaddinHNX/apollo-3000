@@ -46,7 +46,7 @@ const STAGE_STYLE: Record<
   }
 > = {
   idle: {
-    badge: 'bg-black/60 text-amber-200/60 border-black',
+    badge: 'bg-slate-200 text-slate-700 border-black',
     buttonBg: 'bg-amber-400 text-black',
     buttonLabel: 'Waschen starten!',
   },
@@ -61,13 +61,13 @@ const STAGE_STYLE: Record<
     buttonLabel: 'Abnehmen & Falten!',
   },
   folding: {
-    badge: 'bg-amber-400 text-black border-black',
-    buttonBg: 'bg-amber-400 text-black',
+    badge: 'bg-amber-300 text-black border-black',
+    buttonBg: 'bg-amber-300 text-black',
     buttonLabel: 'Im Schrank verstaut!',
   },
   done: {
-    badge: 'bg-white text-black border-black',
-    buttonBg: 'bg-[#2b190f] text-amber-200',
+    badge: 'bg-slate-800 text-white border-black',
+    buttonBg: 'bg-slate-100 text-slate-700',
     buttonLabel: 'Zurücksetzen',
   },
 }
@@ -100,42 +100,42 @@ export function LaundryTracker({
 
   return (
     <div className="space-y-4">
-      {/* Vintage Comic Header Card */}
-      <div className="relative overflow-hidden rounded-3xl border-3 border-black bg-[#2d170c] p-4 comic-shadow">
+      {/* Header Card */}
+      <div className="relative overflow-hidden rounded-3xl border-3 border-black bg-white p-4 comic-shadow">
         <div className="flex items-center justify-between">
           <div>
-            <span className="font-comic text-xs uppercase tracking-wider text-amber-400">
+            <span className="font-comic text-xs uppercase tracking-wider text-sky-600">
               ★ DIE GROSSE WÄSCHE-SCHLACHT ★
             </span>
-            <h2 className="font-comic text-2xl uppercase tracking-wide text-white">
+            <h2 className="font-comic text-2xl uppercase tracking-wide text-slate-900 leading-tight">
               6 Sorten · Pipeline
             </h2>
-            <p className="text-xs font-medium text-amber-100/70">
+            <p className="text-xs font-medium text-slate-600">
               Wäscht → Hängt → Falten → Schrank!
             </p>
           </div>
           <div className="flex flex-col items-end">
-            <span className="rounded-2xl border-2 border-black bg-rose-500 px-3 py-1 font-comic text-sm uppercase text-white comic-shadow-sm">
+            <span className="rounded-2xl border-2 border-black bg-rose-500 px-3 py-1 font-comic text-sm uppercase text-white comic-shadow-sm font-bold">
               {activeLoads} AKTIV
             </span>
           </div>
         </div>
 
         {/* Vintage Comic Stage Legend */}
-        <div className="mt-4 grid grid-cols-3 gap-2 rounded-2xl border-2 border-black bg-[#160c06] p-2.5 text-center font-comic text-xs uppercase">
-          <div className="flex items-center justify-center gap-1.5 text-sky-400">
+        <div className="mt-4 grid grid-cols-3 gap-2 rounded-2xl border-2 border-black bg-sky-50/80 p-2.5 text-center font-comic text-xs uppercase">
+          <div className="flex items-center justify-center gap-1.5 text-sky-700">
             <Droplets className="h-4 w-4 stroke-[2.5]" />
             <span>
               Wäscht ({laundry.filter((l) => l.stage === 'washing').length})
             </span>
           </div>
-          <div className="flex items-center justify-center gap-1.5 text-emerald-400">
+          <div className="flex items-center justify-center gap-1.5 text-emerald-700">
             <Wind className="h-4 w-4 stroke-[2.5]" />
             <span>
               Hängt ({laundry.filter((l) => l.stage === 'hanging').length})
             </span>
           </div>
-          <div className="flex items-center justify-center gap-1.5 text-amber-400">
+          <div className="flex items-center justify-center gap-1.5 text-amber-700">
             <FoldHorizontal className="h-4 w-4 stroke-[2.5]" />
             <span>
               Falten ({laundry.filter((l) => l.stage === 'folding').length})
@@ -157,26 +157,26 @@ export function LaundryTracker({
           return (
             <div
               key={item.id}
-              className="rounded-3xl border-3 border-black bg-[#24150b] p-4 comic-shadow"
+              className="rounded-3xl border-3 border-black bg-white p-4 comic-shadow"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 border-black bg-amber-400 text-black comic-shadow-sm">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 border-black bg-sky-200 text-black comic-shadow-sm">
                     <Icon className="h-6 w-6 stroke-[2.5]" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-comic text-lg uppercase tracking-wide text-white">
+                      <h3 className="font-comic text-lg uppercase tracking-wide text-slate-900">
                         {item.label}
                       </h3>
-                      <span className="rounded-md border border-black bg-black px-1.5 py-0.5 font-comic text-xs text-amber-300">
+                      <span className="rounded-md border border-black bg-slate-100 px-1.5 py-0.5 font-comic text-xs text-slate-800">
                         {item.temperature}
                       </span>
                     </div>
-                    <div className="mt-0.5 flex items-center gap-2 text-xs text-amber-100/70">
+                    <div className="mt-0.5 flex items-center gap-2 text-xs text-slate-600">
                       <span>
                         Status:{' '}
-                        <strong className="text-white">
+                        <strong className="text-slate-900">
                           {PIPELINE_STAGES[currentStageIdx]?.label}
                         </strong>
                       </span>
@@ -190,13 +190,13 @@ export function LaundryTracker({
                 </div>
 
                 <span
-                  className={`rounded-xl border-2 px-2.5 py-1 font-comic text-xs uppercase comic-shadow-sm ${style.badge}`}
+                  className={`rounded-xl border-2 px-2.5 py-1 font-comic text-xs uppercase comic-shadow-sm font-bold ${style.badge}`}
                 >
                   {PIPELINE_STAGES[currentStageIdx]?.shortLabel}
                 </span>
               </div>
 
-              {/* Visual 5-Step Pipeline Bar with bold Comic Outlines */}
+              {/* Visual 5-Step Pipeline Bar */}
               <div className="mt-3.5 grid grid-cols-5 gap-1.5">
                 {PIPELINE_STAGES.map((stage, idx) => {
                   const isActive = idx === currentStageIdx
@@ -212,19 +212,19 @@ export function LaundryTracker({
                       <div
                         className={`h-2.5 w-full rounded-full border border-black transition-all ${
                           isActive
-                            ? 'bg-amber-400 ring-2 ring-black'
+                            ? 'bg-sky-400 ring-2 ring-black'
                             : isPassed
-                              ? 'bg-amber-600'
-                              : 'bg-[#140b06]'
+                              ? 'bg-sky-200'
+                              : 'bg-slate-100'
                         }`}
                       />
                       <span
                         className={`font-comic text-[11px] ${
                           isActive
-                            ? 'font-bold text-amber-300 scale-105'
+                            ? 'font-bold text-sky-700 scale-105'
                             : isPassed
-                              ? 'text-amber-100/60'
-                              : 'text-amber-200/30'
+                              ? 'text-slate-600'
+                              : 'text-slate-400'
                         }`}
                       >
                         {stage.shortLabel}
@@ -235,11 +235,11 @@ export function LaundryTracker({
               </div>
 
               {/* Action Button */}
-              <div className="mt-3.5 flex items-center justify-end border-t-2 border-black/80 pt-3">
+              <div className="mt-3.5 flex items-center justify-end border-t-2 border-slate-100 pt-3">
                 <button
                   type="button"
                   onClick={() => onAdvanceStage(item.id)}
-                  className={`inline-flex items-center gap-1.5 rounded-2xl border-2 border-black px-4 py-1.5 font-comic text-xs uppercase tracking-wider comic-shadow-sm transition active:translate-x-0.5 active:translate-y-0.5 ${style.buttonBg}`}
+                  className={`inline-flex items-center gap-1.5 rounded-2xl border-2 border-black px-4 py-1.5 font-comic text-xs uppercase tracking-wider comic-shadow-sm transition active:translate-x-0.5 active:translate-y-0.5 font-bold ${style.buttonBg}`}
                 >
                   {item.stage === 'done' ? (
                     <>
